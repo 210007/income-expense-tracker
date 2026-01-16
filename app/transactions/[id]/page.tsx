@@ -11,6 +11,7 @@ type Txn = {
   amount: number;
   vendor: string | null;
   description: string | null;
+  category: string | null;
 };
 
 type ReceiptRow = {
@@ -21,6 +22,19 @@ type ReceiptRow = {
   uploaded_at: string;
 };
 
+const CATEGORY_OPTIONS = [
+  "Office supplies",
+  "Equipment",
+  "Software & subscriptions",
+  "Advertising/marketing",
+  "Travel",
+  "Meals",
+  "Shipping/postage",
+  "Fees",
+  "Utilities",
+  "Other",
+] as const;
+
 export default function TransactionDetailPage() {
   const params = useParams<{ id: string }>();
   const txnId = params?.id;
@@ -28,6 +42,10 @@ export default function TransactionDetailPage() {
   const [txn, setTxn] = useState<Txn | null>(null);
   const [receipts, setReceipts] = useState<ReceiptRow[]>([]);
   const [file, setFile] = useState<File | null>(null);
+
+  const [category, setCategory] = useState<string>("Other");
+  const [savingCategory, setSavingCategory] = useState(false);
+
   const [status, setStatus] = useState<string>("");
   const [error, setError] = useState<string | null>(null);
 
@@ -53,12 +71,15 @@ export default function TransactionDetailPage() {
 
     const { data: txnData, error: txnErr } = await supabase
       .from("transactions")
-      .select("id, txn_date, type, amount, vendor, description")
+      .select("id, txn_date, type, amount, vendor, description, category")
       .eq("id", txnId)
       .single();
 
     if (txnErr) return setError(txnErr.message);
-    setTxn(txnData as Txn);
+
+    const t = txnData as Txn;
+    setTxn(t);
+    setCategory(t.category || "Other");
 
     const { data: receiptData, error: recErr } = await supabase
       .from("receipts")
@@ -74,6 +95,28 @@ export default function TransactionDetailPage() {
     load();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [txnId]);
+
+  const saveCategory = async () => {
+    setError(null);
+    setStatus("");
+
+    if (!txnId) return setError("Missing transaction id from the URL.");
+    if (!txn) return setError("Transaction not loaded yet.");
+
+    setSavingCategory(true);
+
+    const { error: updErr } = await supabase
+      .from("transactions")
+      .update({ category })
+      .eq("id", txnId);
+
+    setSavingCategory(false);
+
+    if (updErr) return setError(updErr.message);
+
+    setStatus("Category saved ✅");
+    await load();
+  };
 
   const uploadReceipt = async () => {
     setError(null);
@@ -134,35 +177,89 @@ export default function TransactionDetailPage() {
 
   return (
     <main className="p-6 max-w-3xl mx-auto">
-      <div className="flex items-center justify-between">
-        <a className="underline" href="/transactions">
-          ← Back
-        </a>
-        <a className="underline" href="/">
-          Home
-        </a>
+      {/* Phone-friendly action bar */}
+      <div className="flex flex-col gap-3">
+        <div>
+          <h1 className="text-2xl font-semibold">Transaction</h1>
+          <p className="opacity-80 mt-1">Details, category, and receipts</p>
+        </div>
+
+        <div className="grid grid-cols-3 gap-2">
+          <a
+            href="/transactions"
+            className="text-center bg-black text-white py-3 rounded font-medium"
+          >
+            Back
+          </a>
+
+          <a
+            href="/"
+            className="text-center border py-3 rounded font-medium"
+          >
+            Dashboard
+          </a>
+
+          <button
+            className="text-center border py-3 rounded font-medium"
+            onClick={async () => {
+              await supabase.auth.signOut();
+              window.location.href = "/login";
+            }}
+          >
+            Logout
+          </button>
+        </div>
       </div>
 
-      <h1 className="text-2xl font-semibold mt-4">Transaction</h1>
-
-      {error && <p className="text-red-600 mt-2">{error}</p>}
-      {status && <p className="mt-2 opacity-80">{status}</p>}
+      {error && <p className="text-red-600 mt-4">{error}</p>}
+      {status && <p className="mt-3 opacity-80">{status}</p>}
 
       {!txn ? (
         <p className="mt-4">Loading…</p>
       ) : (
         <div className="border rounded p-4 mt-4">
-          <div className="flex justify-between">
+          <div className="flex justify-between gap-3">
             <div className="font-medium">
               {txn.vendor || "(No vendor)"} —{" "}
               {txn.description || "(No description)"}
             </div>
-            <div>{prettyAmount}</div>
+            <div className="whitespace-nowrap">{prettyAmount}</div>
           </div>
-          <div className="text-sm opacity-80 mt-1">{txn.txn_date}</div>
+
+          <div className="flex justify-between text-sm opacity-80 mt-2">
+            <div>{txn.txn_date}</div>
+            <div>{txn.category || "Uncategorized"}</div>
+          </div>
+
+          {/* Category editor */}
+          <div className="mt-4 grid gap-2">
+            <label className="text-sm font-medium">Category</label>
+            <div className="flex gap-2">
+              <select
+                className="border p-2 rounded w-full"
+                value={category}
+                onChange={(e) => setCategory(e.target.value)}
+              >
+                {CATEGORY_OPTIONS.map((c) => (
+                  <option key={c} value={c}>
+                    {c}
+                  </option>
+                ))}
+              </select>
+
+              <button
+                className="bg-black text-white px-4 py-2 rounded font-medium whitespace-nowrap"
+                onClick={saveCategory}
+                disabled={savingCategory}
+              >
+                {savingCategory ? "Saving..." : "Save"}
+              </button>
+            </div>
+          </div>
         </div>
       )}
 
+      {/* Receipt upload */}
       <section className="border rounded p-4 mt-6">
         <h2 className="font-semibold mb-3">Add receipt</h2>
 
@@ -173,7 +270,7 @@ export default function TransactionDetailPage() {
         />
 
         <button
-          className="bg-black text-white px-4 py-2 ml-0 mt-3"
+          className="bg-black text-white px-4 py-3 rounded font-medium mt-3"
           onClick={uploadReceipt}
         >
           Upload
@@ -184,6 +281,7 @@ export default function TransactionDetailPage() {
         </p>
       </section>
 
+      {/* Receipt list */}
       <section className="mt-6">
         <h2 className="font-semibold mb-3">Receipts</h2>
 
@@ -194,18 +292,19 @@ export default function TransactionDetailPage() {
             {receipts.map((r) => (
               <div
                 key={r.id}
-                className="border rounded p-3 flex justify-between"
+                className="border rounded p-4 flex justify-between gap-3"
               >
                 <div>
                   <div className="font-medium">
                     {r.file_name || r.storage_path}
                   </div>
-                  <div className="text-sm opacity-80">
+                  <div className="text-sm opacity-80 mt-1">
                     {new Date(r.uploaded_at).toLocaleString()}
                   </div>
                 </div>
+
                 <button
-                  className="underline"
+                  className="border rounded px-4 py-2 font-medium whitespace-nowrap"
                   onClick={() => openReceipt(r.storage_path)}
                 >
                   Open
