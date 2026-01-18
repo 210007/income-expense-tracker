@@ -32,6 +32,22 @@ export default function DashboardPage() {
     {}
   );
 
+  // Account menu
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  // Sync button
+  const [syncing, setSyncing] = useState(false);
+  const [syncError, setSyncError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const onDown = (e: MouseEvent) => {
+      const t = e.target as HTMLElement;
+      if (!t.closest("[data-account-menu]")) setMenuOpen(false);
+    };
+    document.addEventListener("mousedown", onDown);
+    return () => document.removeEventListener("mousedown", onDown);
+  }, []);
+
   const now = useMemo(() => new Date(), []);
   const monthStart = useMemo(() => startOfMonthISO(now), [now]);
   const nextMonthStart = useMemo(() => startOfNextMonthISO(now), [now]);
@@ -66,7 +82,8 @@ export default function DashboardPage() {
 
     if (txnErr) {
       setLoading(false);
-      return setError(txnErr.message);
+      setError(txnErr.message);
+      return;
     }
 
     const rows = (txnData as TxnRow[]) ?? [];
@@ -87,7 +104,8 @@ export default function DashboardPage() {
 
     if (recErr) {
       setLoading(false);
-      return setError(recErr.message);
+      setError(recErr.message);
+      return;
     }
 
     const counts: Record<string, number> = {};
@@ -120,6 +138,8 @@ export default function DashboardPage() {
       (t) => (receiptCounts[t.id] ?? 0) > 0
     );
 
+    const missingCount = expenseTxns.length - expenseWithReceipt.length;
+
     const coverage =
       expenseTxns.length === 0
         ? 0
@@ -132,6 +152,7 @@ export default function DashboardPage() {
       coverage,
       txnCount: txns.length,
       expenseCount: expenseTxns.length,
+      missingCount,
     };
   }, [txns, receiptCounts]);
 
@@ -152,14 +173,78 @@ export default function DashboardPage() {
       .sort((a, b) => b.total - a.total);
   }, [txns]);
 
+  const syncPlaid = async () => {
+    setSyncing(true);
+    setSyncError(null);
+
+    const { data } = await supabase.auth.getSession();
+    const accessToken = data.session?.access_token;
+
+    if (!accessToken) {
+      setSyncing(false);
+      setSyncError("Not logged in.");
+      return;
+    }
+
+    const res = await fetch("/api/plaid/import-transactions", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${accessToken}` },
+    });
+
+    const json = await res.json();
+    setSyncing(false);
+
+    if (!res.ok) {
+      setSyncError(json?.error || "Failed to sync.");
+      return;
+    }
+
+    window.location.reload();
+  };
+
   return (
     <main className="p-6 max-w-3xl mx-auto">
-      {/* Phone-first header + big action buttons */}
+      {/* Header + account menu */}
       <div className="flex flex-col gap-3">
-        <div>
-          <h1 className="text-2xl font-semibold">Income / Expense Tracker</h1>
-          <p className="opacity-80 mt-1">{monthLabel}</p>
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <h1 className="text-2xl font-semibold">Income / Expense Tracker</h1>
+            <p className="opacity-80 mt-1">{monthLabel}</p>
+          </div>
+
+          <div className="relative" data-account-menu>
+            <button
+              type="button"
+              onClick={() => setMenuOpen((v) => !v)}
+              className="border rounded-full w-10 h-10 flex items-center justify-center font-semibold"
+              aria-label="Account menu"
+            >
+              <span className="text-lg">👤</span>
+            </button>
+
+            {menuOpen && (
+              <div className="absolute right-0 mt-2 w-44 border rounded bg-black shadow-lg overflow-hidden z-50">
+                <a
+                  href="/settings"
+                  className="block px-4 py-3 text-sm hover:bg-white/10"
+                >
+                  Settings
+                </a>
+                <button
+                  className="w-full text-left px-4 py-3 text-sm hover:bg-white/10"
+                  onClick={async () => {
+                    await supabase.auth.signOut();
+                    window.location.href = "/login";
+                  }}
+                >
+                  Logout
+                </button>
+              </div>
+            )}
+          </div>
         </div>
+
+        {/* Action buttons */}
         <div className="grid grid-cols-2 gap-2">
           <a
             href="/transactions"
@@ -167,31 +252,40 @@ export default function DashboardPage() {
           >
             Transactions
           </a>
+
           <a
             href="/transactions?missing=1"
-            className="text-center border py-3 rounded font-medium"
+            className="text-center border py-3 rounded font-medium relative"
           >
-            Missing receipts
+            Missing Receipts
+            {metrics.missingCount > 0 && (
+              <span className="absolute -top-2 -right-2 bg-red-600 text-white text-xs px-2 py-1 rounded-full">
+                {metrics.missingCount}
+              </span>
+            )}
           </a>
+
           <a
             href="/export"
             className="text-center border py-3 rounded font-medium"
           >
-            Export CSV
+            Export to Excel
           </a>
+
           <button
-            className="text-center border py-3 rounded font-medium"
-            onClick={async () => {
-              await supabase.auth.signOut();
-              window.location.href = "/login";
-            }}
+            className="text-center border py-3 rounded font-medium disabled:opacity-50"
+            disabled={syncing}
+            onClick={syncPlaid}
           >
-            Logout
+            {syncing ? "Syncing…" : "Sync"}
           </button>
         </div>
+
+        {syncError && <p className="text-red-600 mt-1">{syncError}</p>}
       </div>
 
       {error && <p className="text-red-600 mt-4">{error}</p>}
+
       {loading ? (
         <p className="mt-4">Loading…</p>
       ) : (
@@ -245,9 +339,7 @@ export default function DashboardPage() {
                   <div key={c.category} className="border rounded p-4">
                     <div className="flex justify-between gap-3">
                       <div className="font-medium">{c.category}</div>
-                      <div className="whitespace-nowrap">
-                        {money(c.total)}
-                      </div>
+                      <div className="whitespace-nowrap">{money(c.total)}</div>
                     </div>
                   </div>
                 ))}
