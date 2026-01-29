@@ -2,6 +2,8 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
+import ConnectBankButton from "./ConnectBankButton";
+
 
 type CategoryRow = {
   id: string;
