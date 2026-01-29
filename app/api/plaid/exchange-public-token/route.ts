@@ -9,18 +9,23 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Missing public_token" }, { status: 400 });
   }
 
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+  const supabaseUrl = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL!;
+  const anonKey = process.env.SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 
   const authHeader = req.headers.get("authorization");
   const token = authHeader?.startsWith("Bearer ") ? authHeader.slice(7) : null;
 
   if (!token) {
-    return NextResponse.json({ error: "Missing Authorization header" }, { status: 401 });
+    return NextResponse.json(
+      { error: "Missing Authorization header" },
+      { status: 401 }
+    );
   }
 
+  // User-scoped supabase client (RLS applies)
   const supabase = createClient(supabaseUrl, anonKey, {
     global: { headers: { Authorization: `Bearer ${token}` } },
+    auth: { persistSession: false },
   });
 
   const { data: userData, error: userErr } = await supabase.auth.getUser();
@@ -30,24 +35,41 @@ export async function POST(req: Request) {
 
   const user = userData.user;
 
-  const exchange = await plaidClient.itemPublicTokenExchange({ public_token });
-  const access_token = exchange.data.access_token;
-  const item_id = exchange.data.item_id;
+  let access_token: string;
+  let item_id: string;
+
+  try {
+    const exchange = await plaidClient.itemPublicTokenExchange({ public_token });
+    access_token = exchange.data.access_token;
+    item_id = exchange.data.item_id;
+  } catch (err: any) {
+    const plaidError = err?.response?.data ?? null;
+    return NextResponse.json(
+      { error: "Plaid itemPublicTokenExchange failed", plaidError },
+      { status: 500 }
+    );
+  }
 
   const institution_id = institution?.institution_id ?? null;
   const institution_name = institution?.name ?? null;
 
-  const { error: insertErr } = await supabase.from("plaid_items").insert({
-    user_id: user.id,
-    item_id,
-    access_token,
-    institution_id,
-    institution_name,
-  });
+  // Upsert prevents duplicate item_id issues on re-link
+  const { error: upsertErr } = await supabase
+    .from("plaid_items")
+    .upsert(
+      {
+        user_id: user.id,
+        item_id,
+        access_token,
+        institution_id,
+        institution_name,
+      },
+      { onConflict: "item_id" }
+    );
 
-  if (insertErr) {
-    return NextResponse.json({ error: insertErr.message }, { status: 500 });
+  if (upsertErr) {
+    return NextResponse.json({ error: upsertErr.message }, { status: 500 });
   }
 
-  return NextResponse.json({ ok: true });
+  return NextResponse.json({ ok: true, item_id });
 }

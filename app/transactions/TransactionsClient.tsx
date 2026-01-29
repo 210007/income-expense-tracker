@@ -12,6 +12,7 @@ type Txn = {
   vendor: string | null;
   description: string | null;
   category: string | null;
+  source?: string | null; // optional so this works before/after you add the column
 };
 
 type CategoryRow = {
@@ -24,6 +25,8 @@ export default function TransactionsClient() {
   const searchParams = useSearchParams();
 
   const [loading, setLoading] = useState(true);
+  const [importing, setImporting] = useState(false);
+
   const [rows, setRows] = useState<Txn[]>([]);
   const [receiptCounts, setReceiptCounts] = useState<Record<string, number>>({});
   const [error, setError] = useState<string | null>(null);
@@ -96,9 +99,10 @@ export default function TransactionsClient() {
       return;
     }
 
+    // Note: includes source if you've added it; safe even if it's null.
     const { data, error } = await supabase
       .from("transactions")
-      .select("id, txn_date, type, amount, vendor, description, category")
+      .select("id, txn_date, type, amount, vendor, description, category, source")
       .order("txn_date", { ascending: false })
       .limit(300);
 
@@ -190,6 +194,7 @@ export default function TransactionsClient() {
       vendor: vendor || null,
       description: description || null,
       category: category || null,
+      source: "manual",
     });
 
     if (error) return setError(error.message);
@@ -197,8 +202,38 @@ export default function TransactionsClient() {
     setAmount("");
     setVendor("");
     setDescription("");
-    // keep the category selected (don’t reset, it’s annoying)
     await load();
+  };
+
+  const importFromPlaid = async () => {
+    setError(null);
+
+    const { data: sessionData } = await supabase.auth.getSession();
+    const jwt = sessionData.session?.access_token;
+
+    if (!jwt) {
+      window.location.href = "/login";
+      return;
+    }
+
+    setImporting(true);
+
+    const res = await fetch("/api/plaid/import-transactions", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${jwt}` },
+    });
+
+    const out = await res.json();
+
+    setImporting(false);
+
+    if (!res.ok) {
+      return setError(out?.error ?? "Plaid import failed");
+    }
+
+    await load();
+    const n = out.upserted ?? out.inserted ?? 0;
+    alert(`Imported Plaid transactions. Added/updated: ${n}`);
   };
 
   const displayedRows = useMemo(() => {
@@ -332,6 +367,7 @@ export default function TransactionsClient() {
           <button
             className="bg-black text-white px-4 py-3 rounded font-medium mt-2"
             onClick={addTransaction}
+            disabled={importing}
           >
             Add
           </button>
@@ -342,8 +378,17 @@ export default function TransactionsClient() {
               await loadCategories();
               await load();
             }}
+            disabled={importing}
           >
             Reload list
+          </button>
+
+          <button
+            className="border px-4 py-3 rounded font-medium mt-1"
+            onClick={importFromPlaid}
+            disabled={importing}
+          >
+            {importing ? "Importing..." : "Import from bank (Plaid)"}
           </button>
         </div>
       </section>
@@ -388,7 +433,8 @@ export default function TransactionsClient() {
                       <div>
                         {(r.category || "Uncategorized") +
                           " • " +
-                          (hasReceipt ? "Receipt ✅" : "No receipt")}
+                          (hasReceipt ? "Receipt ✅" : "No receipt") +
+                          (r.source === "plaid" ? " • Bank" : "")}
                       </div>
                     </div>
                   </a>
