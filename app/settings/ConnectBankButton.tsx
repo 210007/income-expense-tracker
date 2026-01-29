@@ -80,8 +80,18 @@ export default function ConnectBankButton() {
       // simplest: reload so the rest of the app can reflect “connected”
       window.location.reload();
     },
-    onExit: () => {
-      // user closed Link
+    onExit: (err, metadata) => {
+    if (err) {
+        console.error("Plaid Link exit error:", err, metadata);
+        setError(
+        err.display_message ??
+        err.error_message ??
+        "Plaid Link failed unexpectedly"
+        );
+    } else {
+        // user exited normally
+        setStatus("");
+    }
     },
   });
 
