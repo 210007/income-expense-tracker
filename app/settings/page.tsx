@@ -212,14 +212,16 @@ export default function SettingsPage() {
         )}
       </div>
 
-      {/* Bank (placeholder for now) */}
+      {/* Bank */}
       <div className="border rounded p-4 mt-4">
         <div className="font-semibold">Bank</div>
         <p className="opacity-80 mt-1 text-sm">
-          Real-bank access is pending Plaid approval. For now, use manual entries
-          and custom categories.
+          Connect a bank account to import transactions.
         </p>
+
+        <ConnectBankButton />
       </div>
+
 
       {/* Account */}
       <div className="border rounded p-4 mt-4">
