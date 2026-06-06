@@ -13,9 +13,8 @@ type Txn = {
   category: string | null;
 };
 
-function toCSVValue(v: any) {
+function toCSVValue(v: unknown) {
   const s = (v ?? "").toString();
-  // Escape quotes, wrap in quotes if needed
   const needsQuotes = /[",\n]/.test(s);
   const escaped = s.replace(/"/g, '""');
   return needsQuotes ? `"${escaped}"` : escaped;
@@ -26,16 +25,15 @@ export default function ExportPage() {
   const [status, setStatus] = useState<string>("");
 
   const today = useMemo(() => new Date(), []);
-  const startDefault = useMemo(() => {
-    // default: Jan 1 of this year
-    const d = new Date(today.getFullYear(), 0, 1);
-    return d.toISOString().slice(0, 10);
-  }, [today]);
-
+  const startDefault = useMemo(
+    () => new Date(today.getFullYear(), 0, 1).toISOString().slice(0, 10),
+    [today]
+  );
   const endDefault = useMemo(() => today.toISOString().slice(0, 10), [today]);
 
   const [startDate, setStartDate] = useState(startDefault);
   const [endDate, setEndDate] = useState(endDefault);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -46,18 +44,17 @@ export default function ExportPage() {
 
   const downloadCSV = async () => {
     setError(null);
-    setStatus("Preparing export...");
+    setStatus("");
 
     if (!startDate || !endDate) return setError("Pick a start and end date.");
     if (startDate > endDate) return setError("Start date must be before end date.");
 
     const { data: sessionData } = await supabase.auth.getSession();
-    if (!sessionData.session) {
-      window.location.href = "/login";
-      return;
-    }
+    if (!sessionData.session) { window.location.href = "/login"; return; }
 
-    // 1) Pull transactions in range (inclusive endDate)
+    setLoading(true);
+    setStatus("Fetching transactions…");
+
     const { data: txnData, error: txnErr } = await supabase
       .from("transactions")
       .select("id, txn_date, type, amount, vendor, description, category")
@@ -65,12 +62,11 @@ export default function ExportPage() {
       .lte("txn_date", endDate)
       .order("txn_date", { ascending: true });
 
-    if (txnErr) return setError(txnErr.message);
+    if (txnErr) { setError(txnErr.message); setLoading(false); setStatus(""); return; }
 
     const txns = (txnData as Txn[]) ?? [];
     const ids = txns.map((t) => t.id);
 
-    // 2) Pull receipt rows for those ids, count client-side
     const counts: Record<string, number> = {};
     if (ids.length > 0) {
       const { data: recData, error: recErr } = await supabase
@@ -78,129 +74,96 @@ export default function ExportPage() {
         .select("transaction_id")
         .in("transaction_id", ids);
 
-      if (recErr) return setError(recErr.message);
+      if (recErr) { setError(recErr.message); setLoading(false); setStatus(""); return; }
 
       for (const r of (recData as { transaction_id: string }[]) ?? []) {
         counts[r.transaction_id] = (counts[r.transaction_id] ?? 0) + 1;
       }
     }
 
-    // 3) Build CSV
-    const header = [
-      "date",
-      "type",
-      "amount",
-      "vendor",
-      "description",
-      "category",
-      "receipt_count",
-      "has_receipt",
-      "transaction_id",
-    ];
-
+    const header = ["date", "type", "amount", "vendor", "description", "category", "receipt_count", "has_receipt", "transaction_id"];
     const lines = [header.join(",")];
 
     for (const t of txns) {
       const receiptCount = counts[t.id] ?? 0;
-      const row = [
-        t.txn_date,
-        t.type,
-        Number(t.amount).toFixed(2),
-        t.vendor ?? "",
-        t.description ?? "",
-        t.category ?? "",
-        receiptCount.toString(),
-        receiptCount > 0 ? "yes" : "no",
-        t.id,
-      ].map(toCSVValue);
-
-      lines.push(row.join(","));
+      lines.push(
+        [
+          t.txn_date,
+          t.type,
+          Number(t.amount).toFixed(2),
+          t.vendor ?? "",
+          t.description ?? "",
+          t.category ?? "",
+          receiptCount.toString(),
+          receiptCount > 0 ? "yes" : "no",
+          t.id,
+        ]
+          .map(toCSVValue)
+          .join(",")
+      );
     }
 
-    const csv = lines.join("\n");
-
-    // 4) Download
-    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const blob = new Blob([lines.join("\n")], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
-
-    const filename = `transactions_${startDate}_to_${endDate}.csv`;
-
     const a = document.createElement("a");
     a.href = url;
-    a.download = filename;
+    a.download = `solobooks_${startDate}_to_${endDate}.csv`;
     document.body.appendChild(a);
     a.click();
     a.remove();
-
     URL.revokeObjectURL(url);
 
+    setLoading(false);
     setStatus(`Downloaded ${txns.length} transactions ✅`);
   };
 
   return (
-    <main className="p-6 max-w-3xl mx-auto">
-      <div className="flex flex-col gap-3">
-        <div>
-          <h1 className="text-2xl font-semibold">Export CSV</h1>
-          <p className="opacity-80 mt-1">
-            Download transactions for taxes or accounting.
-          </p>
-        </div>
-
-        <div className="grid grid-cols-2 gap-2">
-          <a
-            href="/"
-            className="text-center bg-black text-white py-3 rounded font-medium"
-          >
-            Dashboard
-          </a>
-          <a
-            href="/transactions"
-            className="text-center border py-3 rounded font-medium"
-          >
-            Transactions
-          </a>
-        </div>
+    <main className="p-6 max-w-4xl mx-auto">
+      <div className="mb-6">
+        <h1 className="text-2xl font-semibold">Export</h1>
+        <p className="text-sm opacity-50 mt-0.5">
+          Download transactions as CSV for your accountant or tax software.
+        </p>
       </div>
 
-      <section className="mt-6 border rounded p-4">
-        <h2 className="font-semibold mb-3">Date range</h2>
+      <section className="border rounded-lg p-5">
+        <h2 className="font-semibold mb-4">Date Range</h2>
 
-        <div className="grid gap-3">
-          <div className="grid gap-2">
-            <label className="text-sm">Start</label>
+        <div className="grid grid-cols-2 gap-4 mb-4">
+          <div>
+            <label className="text-sm opacity-60 block mb-1">Start</label>
             <input
-              className="border p-2 rounded"
+              className="w-full border rounded px-3 py-2 bg-transparent"
               type="date"
               value={startDate}
               onChange={(e) => setStartDate(e.target.value)}
             />
           </div>
-
-          <div className="grid gap-2">
-            <label className="text-sm">End</label>
+          <div>
+            <label className="text-sm opacity-60 block mb-1">End</label>
             <input
-              className="border p-2 rounded"
+              className="w-full border rounded px-3 py-2 bg-transparent"
               type="date"
               value={endDate}
               onChange={(e) => setEndDate(e.target.value)}
             />
           </div>
-
-          {error && <p className="text-red-600">{error}</p>}
-          {status && <p className="opacity-80">{status}</p>}
-
-          <button
-            className="bg-black text-white px-4 py-3 rounded font-medium"
-            onClick={downloadCSV}
-          >
-            Download CSV
-          </button>
-
-          <p className="text-sm opacity-80">
-            Includes category and receipt status.
-          </p>
         </div>
+
+        {error && <p className="text-red-600 text-sm mb-3">{error}</p>}
+        {status && <p className="opacity-60 text-sm mb-3">{status}</p>}
+
+        <button
+          className="w-full bg-black text-white py-3 rounded font-medium disabled:opacity-50"
+          onClick={downloadCSV}
+          disabled={loading}
+        >
+          {loading ? "Preparing…" : "Download CSV"}
+        </button>
+
+        <p className="text-xs opacity-40 mt-3">
+          Includes date, type, amount, vendor, description, category, receipt status, and transaction ID.
+        </p>
       </section>
     </main>
   );
