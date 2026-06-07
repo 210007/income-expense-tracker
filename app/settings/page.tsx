@@ -12,6 +12,14 @@ type CategoryRow = {
   created_at: string;
 };
 
+type CustomerField = {
+  id: string;
+  user_id: string;
+  label: string;
+  field_type: string;
+  created_at: string;
+};
+
 export default function SettingsPage() {
   const [email, setEmail] = useState<string | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
@@ -25,6 +33,14 @@ export default function SettingsPage() {
   const [saving, setSaving] = useState(false);
 
   const normalizedName = useMemo(() => newName.trim().replace(/\s+/g, " "), [newName]);
+
+  // Customer custom fields
+  const [customerFields, setCustomerFields] = useState<CustomerField[]>([]);
+  const [loadingFields, setLoadingFields] = useState(true);
+  const [fieldError, setFieldError] = useState<string | null>(null);
+  const [newFieldLabel, setNewFieldLabel] = useState("");
+  const [newFieldType, setNewFieldType] = useState<"text" | "number" | "date" | "boolean">("text");
+  const [savingField, setSavingField] = useState(false);
 
   const loadCategories = async (uid: string) => {
     setLoadingCats(true);
@@ -42,14 +58,32 @@ export default function SettingsPage() {
     setLoadingCats(false);
   };
 
+  const loadCustomerFields = async (uid: string) => {
+    setLoadingFields(true);
+    setFieldError(null);
+    const { data, error } = await supabase
+      .from("customer_fields")
+      .select("id, user_id, label, field_type, created_at")
+      .eq("user_id", uid)
+      .order("created_at", { ascending: true });
+    if (error) { setFieldError(error.message); setLoadingFields(false); return; }
+    setCustomerFields((data as CustomerField[]) ?? []);
+    setLoadingFields(false);
+  };
+
   useEffect(() => {
     (async () => {
       const { data: u } = await supabase.auth.getUser();
       const uid = u.user?.id ?? null;
       setEmail(u.user?.email ?? null);
       setUserId(uid);
-      if (uid) await loadCategories(uid);
-      else setLoadingCats(false);
+      if (uid) {
+        await loadCategories(uid);
+        await loadCustomerFields(uid);
+      } else {
+        setLoadingCats(false);
+        setLoadingFields(false);
+      }
     })();
   }, []);
 
@@ -85,6 +119,37 @@ export default function SettingsPage() {
 
   const typeLabel = (t: string) =>
     t === "expense" ? "Expense" : t === "income" ? "Income" : t === "both" ? "Both" : t;
+
+  const addCustomerField = async () => {
+    if (!userId) return;
+    const label = newFieldLabel.trim();
+    if (!label) return;
+    setSavingField(true);
+    setFieldError(null);
+    const { error } = await supabase.from("customer_fields").insert({
+      user_id: userId,
+      label,
+      field_type: newFieldType,
+    });
+    setSavingField(false);
+    if (error) { setFieldError(error.message); return; }
+    setNewFieldLabel("");
+    setNewFieldType("text");
+    await loadCustomerFields(userId);
+  };
+
+  const deleteCustomerField = async (id: string) => {
+    if (!window.confirm("Delete this custom field? All values for this field will also be deleted.")) return;
+    setFieldError(null);
+    const { error } = await supabase.from("customer_fields").delete().eq("id", id);
+    if (error) { setFieldError(error.message); return; }
+    if (userId) await loadCustomerFields(userId);
+  };
+
+  const fieldTypeLabel = (t: string) => {
+    const map: Record<string, string> = { text: "Text", number: "Number", date: "Date", boolean: "Yes/No" };
+    return map[t] ?? t;
+  };
 
   return (
     <main className="p-6 max-w-4xl mx-auto">
@@ -161,6 +226,69 @@ export default function SettingsPage() {
                 <button
                   className="text-xs opacity-50 hover:opacity-100 hover:text-red-600"
                   onClick={() => deleteCategory(c.id)}
+                >
+                  Delete
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Customer Custom Fields */}
+      <div className="border rounded-lg p-5 mb-4">
+        <div className="font-semibold mb-1">Customer Custom Fields</div>
+        <p className="text-sm opacity-50 mb-4">
+          Add extra fields that appear on every customer record.
+        </p>
+
+        <div className="flex gap-2 mb-2">
+          <input
+            value={newFieldLabel}
+            onChange={(e) => setNewFieldLabel(e.target.value)}
+            placeholder="Field label (e.g. Birthday)"
+            className="flex-1 border rounded px-3 py-2 bg-transparent"
+            onKeyDown={(e) => e.key === "Enter" && addCustomerField()}
+          />
+          <select
+            value={newFieldType}
+            onChange={(e) => setNewFieldType(e.target.value as "text" | "number" | "date" | "boolean")}
+            className="border rounded px-3 py-2 bg-transparent"
+          >
+            <option value="text">Text</option>
+            <option value="number">Number</option>
+            <option value="date">Date</option>
+            <option value="boolean">Yes/No</option>
+          </select>
+          <button
+            className="border rounded px-4 py-2 font-medium disabled:opacity-50"
+            disabled={savingField || !newFieldLabel.trim()}
+            onClick={addCustomerField}
+          >
+            {savingField ? "…" : "Add"}
+          </button>
+        </div>
+
+        {fieldError && <p className="text-red-600 text-sm mb-3">{fieldError}</p>}
+
+        {loadingFields ? (
+          <p className="opacity-50 text-sm">Loading…</p>
+        ) : customerFields.length === 0 ? (
+          <p className="opacity-50 text-sm">No custom fields yet.</p>
+        ) : (
+          <div className="grid gap-2 mt-3">
+            {customerFields.map((f) => (
+              <div
+                key={f.id}
+                className="border rounded-lg px-3 py-2 flex items-center justify-between"
+              >
+                <div>
+                  <span className="font-medium">{f.label}</span>
+                  <span className="text-xs opacity-50 ml-2">{fieldTypeLabel(f.field_type)}</span>
+                </div>
+                <button
+                  className="text-xs opacity-50 hover:opacity-100 hover:text-red-600"
+                  onClick={() => deleteCustomerField(f.id)}
                 >
                   Delete
                 </button>
