@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
+import AddressAutocomplete from "@/components/AddressAutocomplete";
 
 type Customer = {
   id: string;
@@ -298,10 +299,10 @@ export default function CustomerDetailPage() {
 
             <div>
               <label className="text-sm opacity-60 block mb-1">Address</label>
-              <input
+              <AddressAutocomplete
                 className="w-full border rounded px-3 py-2 bg-transparent"
                 value={editAddress}
-                onChange={(e) => setEditAddress(e.target.value)}
+                onChange={setEditAddress}
               />
             </div>
 
