@@ -11,6 +11,7 @@ type Invoice = {
   issue_date: string;
   due_date: string | null;
   notes: string | null;
+  public_token: string;
   customers: { id: string; name: string; email: string | null } | null;
   invoice_items: { id: string; description: string; quantity: number; unit_price: number }[];
 };
@@ -37,15 +38,19 @@ export default function InvoiceDetailPage() {
   const [invoice, setInvoice] = useState<Invoice | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [updating, setUpdating] = useState(false);
+  const [sending, setSending] = useState(false);
+  const [toast, setToast] = useState<string | null>(null);
+  const [accessToken, setAccessToken] = useState<string | null>(null);
 
   const load = async () => {
     const { data: sessionData } = await supabase.auth.getSession();
     if (!sessionData.session) { window.location.href = "/login"; return; }
+    setAccessToken(sessionData.session.access_token);
 
     const { data, error } = await supabase
       .from("invoices")
       .select(`
-        id, invoice_number, status, issue_date, due_date, notes,
+        id, invoice_number, status, issue_date, due_date, notes, public_token,
         customers ( id, name, email ),
         invoice_items ( id, description, quantity, unit_price )
       `)
@@ -72,6 +77,29 @@ export default function InvoiceDetailPage() {
     setInvoice((prev) => prev ? { ...prev, status } : prev);
   };
 
+  const showToast = (msg: string) => { setToast(msg); setTimeout(() => setToast(null), 3000); };
+
+  const sendEmail = async () => {
+    if (!invoice || !accessToken) return;
+    setSending(true);
+    const res = await fetch(`/api/invoices/${invoice.id}/send-email`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${accessToken}` },
+    });
+    setSending(false);
+    const { error: err } = await res.json();
+    if (err) { setError(err); return; }
+    setInvoice((prev) => prev && prev.status === "draft" ? { ...prev, status: "sent" } : prev);
+    showToast("Invoice sent by email!");
+  };
+
+  const copyPaymentLink = () => {
+    if (!invoice) return;
+    const url = `${window.location.origin}/pay/${invoice.public_token}`;
+    navigator.clipboard.writeText(url);
+    showToast("Payment link copied!");
+  };
+
   const fmt = (iso: string) =>
     new Date(iso).toLocaleDateString(undefined, { year: "numeric", month: "long", day: "numeric" });
 
@@ -95,6 +123,12 @@ export default function InvoiceDetailPage() {
 
   return (
     <main className="p-6 max-w-4xl mx-auto">
+      {toast && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-black text-white dark:bg-white dark:text-black text-sm px-4 py-2.5 rounded-lg shadow-lg z-50 font-medium">
+          {toast}
+        </div>
+      )}
+
       {/* Header */}
       <div className="flex items-start justify-between gap-4 mb-6">
         <div>
@@ -112,23 +146,49 @@ export default function InvoiceDetailPage() {
           )}
         </div>
 
-        <div className="flex gap-2 flex-wrap justify-end">
-          {statusActions.map((action) => (
+        <div className="flex flex-col items-end gap-2">
+          {/* Utility actions */}
+          <div className="flex gap-2">
             <button
-              key={action.status}
-              onClick={() => setStatus(action.status)}
-              disabled={updating}
-              className={`border rounded px-3 py-1.5 text-sm font-medium hover:opacity-70 disabled:opacity-40 ${
-                action.status === "paid"
-                  ? "border-green-500 text-green-600 dark:text-green-400"
-                  : action.status === "void"
-                  ? "border-red-400 text-red-500 opacity-60"
-                  : ""
-              }`}
+              onClick={() => window.open(`/invoices/${invoice.id}/print`, "_blank")}
+              className="border rounded px-3 py-1.5 text-sm hover:opacity-70"
             >
-              {action.label}
+              Print / PDF
             </button>
-          ))}
+            <button
+              onClick={copyPaymentLink}
+              className="border rounded px-3 py-1.5 text-sm hover:opacity-70"
+            >
+              Copy Payment Link
+            </button>
+            <button
+              onClick={sendEmail}
+              disabled={sending || !invoice.customers?.email}
+              title={!invoice.customers?.email ? "Customer has no email address" : undefined}
+              className="border rounded px-3 py-1.5 text-sm hover:opacity-70 disabled:opacity-40"
+            >
+              {sending ? "Sending…" : "Send by Email"}
+            </button>
+          </div>
+          {/* Status actions */}
+          <div className="flex gap-2 flex-wrap justify-end">
+            {statusActions.map((action) => (
+              <button
+                key={action.status}
+                onClick={() => setStatus(action.status)}
+                disabled={updating}
+                className={`border rounded px-3 py-1.5 text-sm font-medium hover:opacity-70 disabled:opacity-40 ${
+                  action.status === "paid"
+                    ? "border-green-500 text-green-600 dark:text-green-400"
+                    : action.status === "void"
+                    ? "border-red-400 text-red-500 opacity-60"
+                    : ""
+                }`}
+              >
+                {action.label}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 

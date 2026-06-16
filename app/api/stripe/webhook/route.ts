@@ -25,6 +25,19 @@ export async function POST(req: NextRequest) {
 
   switch (event.type) {
     case "checkout.session.completed": {
+      // One-time invoice payment
+      if (session.metadata?.type === "invoice_payment") {
+        const invoiceId = session.metadata?.invoice_id;
+        if (invoiceId) {
+          await supabase
+            .from("invoices")
+            .update({ status: "paid", paid_at: new Date().toISOString() })
+            .eq("id", invoiceId);
+        }
+        break;
+      }
+
+      // Module subscription
       const userId = session.metadata?.user_id;
       const module = session.metadata?.module;
       if (!userId || !module) break;

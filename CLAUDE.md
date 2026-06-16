@@ -38,6 +38,9 @@ STRIPE_TEAM_PRICE_ID=              # Stripe Price ID for the Team Access module 
 STRIPE_RECURRING_PRICE_ID=         # Stripe Price ID for the Recurring Transactions module ($6/mo)
 STRIPE_SCHEDULING_PRICE_ID=        # Stripe Price ID for the Scheduling module ($9/mo)
 CRON_SECRET=                       # Random secret string — add to Vercel env vars too; guards /api/cron/* routes
+RESEND_API_KEY=                    # From resend.com — used to send invoices by email
+RESEND_FROM_EMAIL=                 # e.g. invoices@yourdomain.com — must be verified in Resend dashboard
+NEXT_PUBLIC_APP_URL=               # e.g. https://your-app.vercel.app — used as base URL for payment links in emails
 ```
 
 ## Architecture
