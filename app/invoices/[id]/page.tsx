@@ -84,12 +84,14 @@ export default function InvoiceDetailPage() {
 
   const total = invoice.invoice_items.reduce((sum, i) => sum + i.quantity * i.unit_price, 0);
 
-  const statusActions: { label: string; status: Invoice["status"] }[] = [
-    { label: "Mark as Sent", status: "sent" },
-    { label: "Mark as Paid", status: "paid" },
-    { label: "Mark as Draft", status: "draft" },
-    { label: "Void Invoice", status: "void" },
-  ].filter((a) => a.status !== invoice.status);
+  const statusActions = (
+    [
+      { label: "Mark as Sent", status: "sent" },
+      { label: "Mark as Paid", status: "paid" },
+      { label: "Mark as Draft", status: "draft" },
+      { label: "Void Invoice", status: "void" },
+    ] as { label: string; status: Invoice["status"] }[]
+  ).filter((a) => a.status !== invoice.status);
 
   return (
     <main className="p-6 max-w-4xl mx-auto">

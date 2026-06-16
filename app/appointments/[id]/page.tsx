@@ -111,11 +111,13 @@ export default function AppointmentDetailPage() {
   if (error) return <main className="p-6 max-w-4xl mx-auto"><p className="text-red-600">{error}</p></main>;
   if (!appointment) return null;
 
-  const statusActions: { label: string; status: Appointment["status"] }[] = [
-    { label: "Mark Completed", status: "completed" },
-    { label: "Mark Scheduled", status: "scheduled" },
-    { label: "Cancel", status: "cancelled" },
-  ].filter((a) => a.status !== appointment.status);
+  const statusActions = (
+    [
+      { label: "Mark Completed", status: "completed" },
+      { label: "Mark Scheduled", status: "scheduled" },
+      { label: "Cancel", status: "cancelled" },
+    ] as { label: string; status: Appointment["status"] }[]
+  ).filter((a) => a.status !== appointment.status);
 
   return (
     <main className="p-6 max-w-4xl mx-auto">

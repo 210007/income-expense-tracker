@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 import type { ModuleName } from "@/lib/modules";
@@ -39,7 +39,7 @@ const MODULES: ModuleInfo[] = [
 
 type ActiveMap = Partial<Record<ModuleName, { status: string; stripe_customer_id: string | null }>>;
 
-export default function PlanPage() {
+function PlanPageInner() {
   const searchParams = useSearchParams();
   const successModule = searchParams.get("success");
 
@@ -203,5 +203,13 @@ export default function PlanPage() {
         </div>
       )}
     </main>
+  );
+}
+
+export default function PlanPage() {
+  return (
+    <Suspense fallback={<main className="p-6 max-w-4xl mx-auto"><p className="opacity-50">Loading…</p></main>}>
+      <PlanPageInner />
+    </Suspense>
   );
 }
