@@ -84,6 +84,13 @@ const MODULES: ModuleInfo[] = [
     price: "$9 / mo",
     features: ["Calendar view", "Per-client appointment history", "One-click invoice from appointment"],
   },
+  {
+    id: "mileage",
+    name: "Mileage Tracking",
+    description: "Log business trips and automatically calculate your IRS standard mileage deduction.",
+    price: "$6 / mo",
+    features: ["Trip log with from/to locations", "70¢/mile IRS deduction calc", "Yearly summary", "Export-ready for tax time"],
+  },
 ];
 
 type ActiveMap = Partial<Record<ModuleName, { status: string; stripe_customer_id: string | null }>>;

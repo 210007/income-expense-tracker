@@ -20,6 +20,7 @@ const MODULE_PRICES: Record<string, string> = {
   tax: process.env.STRIPE_TAX_PRICE_ID!,
   inventory: process.env.STRIPE_INVENTORY_PRICE_ID!,
   team: process.env.STRIPE_TEAM_PRICE_ID!,
+  mileage: process.env.STRIPE_MILEAGE_PRICE_ID!,
 };
 
 export async function POST(req: NextRequest) {

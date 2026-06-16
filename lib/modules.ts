@@ -1,6 +1,6 @@
 import { supabase } from "./supabaseClient";
 
-export type ModuleName = "invoicing" | "recurring" | "scheduling" | "estimates" | "time_tracking" | "accounts_payable" | "projects" | "tax" | "inventory" | "team";
+export type ModuleName = "invoicing" | "recurring" | "scheduling" | "estimates" | "time_tracking" | "accounts_payable" | "projects" | "tax" | "inventory" | "team" | "mileage";
 
 export async function getActiveModules(): Promise<ModuleName[]> {
   const { data: sessionData } = await supabase.auth.getSession();

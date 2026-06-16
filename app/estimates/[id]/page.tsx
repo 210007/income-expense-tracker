@@ -32,11 +32,15 @@ export default function EstimateDetailPage() {
   const [error, setError] = useState<string | null>(null);
   const [updating, setUpdating] = useState(false);
   const [converting, setConverting] = useState(false);
+  const [sending, setSending] = useState(false);
+  const [toast, setToast] = useState<string | null>(null);
+  const [accessToken, setAccessToken] = useState<string | null>(null);
 
   useEffect(() => {
     (async () => {
       const { data: sessionData } = await supabase.auth.getSession();
       if (!sessionData.session) { window.location.href = "/login"; return; }
+      setAccessToken(sessionData.session.access_token);
 
       const { data, error } = await supabase
         .from("estimates")
@@ -107,6 +111,22 @@ export default function EstimateDetailPage() {
     router.push(`/invoices/${inv.id}`);
   };
 
+  const showToast = (msg: string) => { setToast(msg); setTimeout(() => setToast(null), 3000); };
+
+  const sendEmail = async () => {
+    if (!estimate || !accessToken) return;
+    setSending(true);
+    const res = await fetch(`/api/estimates/${estimate.id}/send-email`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${accessToken}` },
+    });
+    setSending(false);
+    const { error: err } = await res.json();
+    if (err) { setError(err); return; }
+    setEstimate((prev) => prev && prev.status === "draft" ? { ...prev, status: "sent" } : prev);
+    showToast("Estimate sent by email!");
+  };
+
   const fmt = (iso: string) =>
     new Date(iso).toLocaleDateString(undefined, { year: "numeric", month: "long", day: "numeric" });
 
@@ -131,6 +151,12 @@ export default function EstimateDetailPage() {
 
   return (
     <main className="p-6 max-w-4xl mx-auto">
+      {toast && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-black text-white dark:bg-white dark:text-black text-sm px-4 py-2.5 rounded-lg shadow-lg z-50 font-medium">
+          {toast}
+        </div>
+      )}
+
       <div className="flex items-start justify-between gap-4 mb-6">
         <div>
           <button onClick={() => router.push("/estimates")} className="text-sm opacity-50 hover:opacity-80 mb-2 block">← Estimates</button>
@@ -141,22 +167,42 @@ export default function EstimateDetailPage() {
           {estimate.customers && <p className="text-sm opacity-60 mt-1">{estimate.customers.name}</p>}
         </div>
 
-        <div className="flex gap-2 flex-wrap justify-end">
-          {canConvert && (
-            <button onClick={convertToInvoice} disabled={converting} className="bg-black text-white dark:bg-white dark:text-black rounded px-3 py-1.5 text-sm font-medium hover:opacity-80 disabled:opacity-40">
-              {converting ? "Converting…" : "Convert to Invoice"}
+        <div className="flex flex-col items-end gap-2">
+          {/* Utility actions */}
+          <div className="flex gap-2">
+            <button
+              onClick={() => window.open(`/estimates/${estimate.id}/print`, "_blank")}
+              className="border rounded px-3 py-1.5 text-sm hover:opacity-70"
+            >
+              Print / PDF
             </button>
-          )}
-          {estimate.invoice_id && (
-            <a href={`/invoices/${estimate.invoice_id}`} className="border rounded px-3 py-1.5 text-sm font-medium hover:opacity-70">
-              View Invoice →
-            </a>
-          )}
-          {statusActions.map((action) => (
-            <button key={action.status} onClick={() => setStatus(action.status)} disabled={updating} className={`border rounded px-3 py-1.5 text-sm font-medium hover:opacity-70 disabled:opacity-40 ${action.status === "accepted" ? "border-green-500 text-green-600 dark:text-green-400" : action.status === "declined" ? "border-red-400 text-red-500 opacity-60" : ""}`}>
-              {action.label}
+            <button
+              onClick={sendEmail}
+              disabled={sending || !estimate.customers?.email}
+              title={!estimate.customers?.email ? "Customer has no email address" : undefined}
+              className="border rounded px-3 py-1.5 text-sm hover:opacity-70 disabled:opacity-40"
+            >
+              {sending ? "Sending…" : "Send by Email"}
             </button>
-          ))}
+          </div>
+          {/* Status / workflow actions */}
+          <div className="flex gap-2 flex-wrap justify-end">
+            {canConvert && (
+              <button onClick={convertToInvoice} disabled={converting} className="bg-black text-white dark:bg-white dark:text-black rounded px-3 py-1.5 text-sm font-medium hover:opacity-80 disabled:opacity-40">
+                {converting ? "Converting…" : "Convert to Invoice"}
+              </button>
+            )}
+            {estimate.invoice_id && (
+              <a href={`/invoices/${estimate.invoice_id}`} className="border rounded px-3 py-1.5 text-sm font-medium hover:opacity-70">
+                View Invoice →
+              </a>
+            )}
+            {statusActions.map((action) => (
+              <button key={action.status} onClick={() => setStatus(action.status)} disabled={updating} className={`border rounded px-3 py-1.5 text-sm font-medium hover:opacity-70 disabled:opacity-40 ${action.status === "accepted" ? "border-green-500 text-green-600 dark:text-green-400" : action.status === "declined" ? "border-red-400 text-red-500 opacity-60" : ""}`}>
+                {action.label}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
