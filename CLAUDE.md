@@ -1,0 +1,71 @@
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
+## Commands
+
+```bash
+npm run dev      # Start dev server at http://localhost:3000
+npm run build    # Production build
+npm run lint     # ESLint
+```
+
+No test suite is configured.
+
+## Environment Variables
+
+Create a `.env.local` with:
+
+```
+NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_ANON_KEY=
+SUPABASE_SERVICE_ROLE_KEY=
+PLAID_CLIENT_ID=
+PLAID_SECRET=
+PLAID_ENV=sandbox          # sandbox | development | production
+NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=   # optional — AddressAutocomplete degrades to plain text without it
+```
+
+## Architecture
+
+**SoloBooks** is a bookkeeping app for small businesses and freelancers. Stack: Next.js 16 App Router + TypeScript + Tailwind CSS v4 + Supabase + Plaid.
+
+### Supabase clients
+
+Two clients with different privilege levels:
+- `lib/supabaseClient.ts` — browser client using the anon key; used in all `"use client"` pages
+- `lib/supabaseServer.ts` — server client using the service role key; use only in API routes when you need to bypass RLS
+
+API routes authenticate users by accepting a Supabase JWT in the `Authorization: Bearer <token>` header, then calling `supabase.auth.getUser()` to resolve the identity. The client passes `session.access_token` from `supabase.auth.getSession()`.
+
+### Page architecture
+
+The Navbar (`components/Navbar.tsx`) hides itself on `/` and `/login`. All authenticated pages live under routes that the Navbar covers.
+
+Most pages are pure `"use client"` components that check `supabase.auth.getSession()` on mount and redirect to `/login` if unauthenticated. The exceptions are thin server wrappers (e.g. `app/transactions/page.tsx`) that add a `<Suspense>` boundary around the real client component.
+
+### Database schema
+
+All tables have RLS enabled — queries from the browser client are automatically scoped to the authenticated user.
+
+| Table | Purpose |
+|---|---|
+| `transactions` | Core table: `id`, `user_id`, `txn_date`, `type` (income/expense), `amount`, `vendor`, `description`, `category`, `plaid_transaction_id`, `plaid_account_id`, `source` |
+| `receipts` | Receipt attachments: `id`, `transaction_id` |
+| `categories` | Per-user categories: `name`, `type` (income/expense/both) |
+| `plaid_items` | Bank connections: `item_id`, `access_token`, `user_id` |
+| `customers` | Customer records: `name`, `email`, `phone`, `address`, `notes` |
+| `customer_fields` | User-defined extra field definitions: `label`, `field_type` (text/number/date/boolean) |
+| `customer_field_values` | Values per customer per custom field (stored as `text` regardless of type) |
+
+### Plaid integration
+
+`lib/plaid.ts` exports a singleton `plaidClient`. The bank flow is:
+1. `POST /api/plaid/create-link-token` — creates a Plaid Link token
+2. `ConnectBankButton` opens Plaid Link via `react-plaid-link`
+3. `POST /api/plaid/exchange-public-token` — exchanges the token and stores the access token in `plaid_items`
+4. `POST /api/plaid/import-transactions` — pages through all linked items and upserts transactions using `plaid_transaction_id` as the conflict key (last 30 days)
+
+### Database migrations
+
+Migrations are SQL files in `supabase/migrations/`. Apply them manually via the Supabase Dashboard SQL Editor — the Supabase CLI is not configured for this project. See `MIGRATION.md` for the project URL.
