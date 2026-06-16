@@ -27,6 +27,7 @@ export default function Navbar() {
     { href: "/dashboard", label: "Dashboard" },
     { href: "/customers", label: "Customers" },
     { href: "/transactions", label: "Transactions" },
+    { href: "/invoices", label: "Invoices" },
     { href: "/export", label: "Export" },
   ];
 
@@ -78,6 +79,13 @@ export default function Navbar() {
             </button>
             {menuOpen && (
               <div className="absolute right-0 mt-2 w-44 border rounded shadow-lg z-50 overflow-hidden bg-white dark:bg-black">
+                <Link
+                  href="/plan"
+                  className="block px-4 py-3 text-sm hover:bg-black/5 dark:hover:bg-white/10"
+                  onClick={() => setMenuOpen(false)}
+                >
+                  My Plan
+                </Link>
                 <Link
                   href="/settings"
                   className="block px-4 py-3 text-sm hover:bg-black/5 dark:hover:bg-white/10"

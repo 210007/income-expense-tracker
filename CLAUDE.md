@@ -24,6 +24,10 @@ PLAID_CLIENT_ID=
 PLAID_SECRET=
 PLAID_ENV=sandbox          # sandbox | development | production
 NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=   # optional — AddressAutocomplete degrades to plain text without it
+STRIPE_SECRET_KEY=
+STRIPE_WEBHOOK_SECRET=             # from `stripe listen` locally or Stripe dashboard webhook signing secret
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=
+STRIPE_INVOICING_PRICE_ID=         # Stripe Price ID for the Invoicing module subscription
 ```
 
 ## Architecture
@@ -57,6 +61,9 @@ All tables have RLS enabled — queries from the browser client are automaticall
 | `customers` | Customer records: `name`, `email`, `phone`, `address`, `notes` |
 | `customer_fields` | User-defined extra field definitions: `label`, `field_type` (text/number/date/boolean) |
 | `customer_field_values` | Values per customer per custom field (stored as `text` regardless of type) |
+| `user_modules` | Active module subscriptions: `module` (e.g. `invoicing`), `stripe_subscription_id`, `status` |
+| `invoices` | Invoice headers: `customer_id`, `invoice_number`, `status` (draft/sent/paid/void), `issue_date`, `due_date` |
+| `invoice_items` | Line items: `invoice_id`, `description`, `quantity`, `unit_price` |
 
 ### Plaid integration
 
