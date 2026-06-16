@@ -37,6 +37,8 @@ export default function Navbar() {
     { href: "/appointments", label: "Appointments" },
     { href: "/budget", label: "Budget" },
     { href: "/mileage", label: "Mileage" },
+    { href: "/purchase-orders", label: "Purchase Orders" },
+    { href: "/recurring-invoices", label: "Recur. Invoices" },
     { href: "/tax", label: "Tax" },
     { href: "/team", label: "Team" },
     { href: "/export", label: "Export" },

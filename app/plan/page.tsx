@@ -98,6 +98,13 @@ const MODULES: ModuleInfo[] = [
     price: "$6 / mo",
     features: ["Per-category monthly budgets", "Visual progress bars", "Over-budget alerts", "Unbudgeted spending summary"],
   },
+  {
+    id: "purchase_orders",
+    name: "Purchase Orders",
+    description: "Create and send purchase orders to vendors, track delivery status, and manage line items.",
+    price: "$6 / mo",
+    features: ["PO number auto-generation", "Email to vendor", "Draft / Sent / Received / Cancelled workflow", "Print & PDF export"],
+  },
 ];
 
 type ActiveMap = Partial<Record<ModuleName, { status: string; stripe_customer_id: string | null }>>;
