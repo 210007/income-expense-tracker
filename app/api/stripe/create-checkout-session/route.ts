@@ -11,6 +11,11 @@ const supabase = createClient(
 
 const MODULE_PRICES: Record<string, string> = {
   invoicing: process.env.STRIPE_INVOICING_PRICE_ID!,
+  estimates: process.env.STRIPE_ESTIMATES_PRICE_ID!,
+  time_tracking: process.env.STRIPE_TIME_TRACKING_PRICE_ID!,
+  accounts_payable: process.env.STRIPE_ACCOUNTS_PAYABLE_PRICE_ID!,
+  recurring: process.env.STRIPE_RECURRING_PRICE_ID!,
+  scheduling: process.env.STRIPE_SCHEDULING_PRICE_ID!,
 };
 
 export async function POST(req: NextRequest) {

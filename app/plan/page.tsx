@@ -22,6 +22,27 @@ const MODULES: ModuleInfo[] = [
     features: ["Unlimited invoices", "Line item builder", "Draft / Sent / Paid / Void workflow", "Per-customer invoice history"],
   },
   {
+    id: "estimates",
+    name: "Estimates & Quotes",
+    description: "Send professional quotes to clients. Accept or decline, then convert to an invoice in one click.",
+    price: "$6 / mo",
+    features: ["Unlimited estimates", "Expiry dates", "Accept / Decline / Convert workflow", "Linked to invoices"],
+  },
+  {
+    id: "time_tracking",
+    name: "Time Tracking",
+    description: "Log billable hours per client and generate invoices directly from your time entries.",
+    price: "$9 / mo",
+    features: ["Per-client hour logs", "Custom hourly rates", "One-click invoice from hours", "Uninvoiced hours dashboard"],
+  },
+  {
+    id: "accounts_payable",
+    name: "Accounts Payable",
+    description: "Track bills you owe vendors, see what's overdue, and mark payments when made.",
+    price: "$6 / mo",
+    features: ["Bill tracking", "Due date aging", "Paid / Void workflow", "Category tagging"],
+  },
+  {
     id: "recurring",
     name: "Recurring Transactions",
     description: "Auto-log income or expenses on a set schedule — weekly, monthly, or custom.",
