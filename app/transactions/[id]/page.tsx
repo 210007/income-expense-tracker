@@ -12,7 +12,10 @@ type Txn = {
   vendor: string | null;
   description: string | null;
   category: string | null;
+  project_id: string | null;
 };
+
+type Project = { id: string; name: string };
 
 type ReceiptRow = {
   id: string;
@@ -45,6 +48,9 @@ export default function TransactionDetailPage() {
 
   const [category, setCategory] = useState<string>("Other");
   const [savingCategory, setSavingCategory] = useState(false);
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [projectId, setProjectId] = useState<string>("");
+  const [savingProject, setSavingProject] = useState(false);
 
   const [status, setStatus] = useState<string>("");
   const [error, setError] = useState<string | null>(null);
@@ -69,17 +75,18 @@ export default function TransactionDetailPage() {
       return;
     }
 
-    const { data: txnData, error: txnErr } = await supabase
-      .from("transactions")
-      .select("id, txn_date, type, amount, vendor, description, category")
-      .eq("id", txnId)
-      .single();
+    const [{ data: txnData, error: txnErr }, { data: projData }] = await Promise.all([
+      supabase.from("transactions").select("id, txn_date, type, amount, vendor, description, category, project_id").eq("id", txnId).single(),
+      supabase.from("projects").select("id, name").eq("user_id", sessionData.session!.user.id).neq("status", "archived").order("name"),
+    ]);
 
     if (txnErr) return setError(txnErr.message);
 
     const t = txnData as Txn;
     setTxn(t);
     setCategory(t.category || "Other");
+    setProjectId(t.project_id ?? "");
+    setProjects((projData as Project[]) ?? []);
 
     const { data: receiptData, error: recErr } = await supabase
       .from("receipts")
@@ -115,6 +122,21 @@ export default function TransactionDetailPage() {
     if (updErr) return setError(updErr.message);
 
     setStatus("Category saved ✅");
+    await load();
+  };
+
+  const saveProject = async () => {
+    setError(null);
+    setStatus("");
+    if (!txnId) return;
+    setSavingProject(true);
+    const { error: updErr } = await supabase
+      .from("transactions")
+      .update({ project_id: projectId || null })
+      .eq("id", txnId);
+    setSavingProject(false);
+    if (updErr) return setError(updErr.message);
+    setStatus("Project saved ✅");
     await load();
   };
 
@@ -256,6 +278,32 @@ export default function TransactionDetailPage() {
               </button>
             </div>
           </div>
+
+          {/* Project tagger */}
+          {projects.length > 0 && (
+            <div className="mt-4 grid gap-2">
+              <label className="text-sm font-medium">Project</label>
+              <div className="flex gap-2">
+                <select
+                  className="border p-2 rounded w-full"
+                  value={projectId}
+                  onChange={(e) => setProjectId(e.target.value)}
+                >
+                  <option value="">No project</option>
+                  {projects.map((p) => (
+                    <option key={p.id} value={p.id}>{p.name}</option>
+                  ))}
+                </select>
+                <button
+                  className="bg-black text-white px-4 py-2 rounded font-medium whitespace-nowrap"
+                  onClick={saveProject}
+                  disabled={savingProject}
+                >
+                  {savingProject ? "Saving..." : "Save"}
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       )}
 

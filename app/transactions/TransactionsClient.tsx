@@ -13,6 +13,7 @@ type Txn = {
   description: string | null;
   category: string | null;
   source?: string | null;
+  project_id: string | null;
 };
 
 type CategoryRow = {
@@ -20,6 +21,8 @@ type CategoryRow = {
   name: string;
   type: "income" | "expense" | "both" | string;
 };
+
+type Project = { id: string; name: string };
 
 export default function TransactionsClient() {
   const searchParams = useSearchParams();
@@ -32,6 +35,7 @@ export default function TransactionsClient() {
   const [showMissingOnly, setShowMissingOnly] = useState(false);
   const [categories, setCategories] = useState<CategoryRow[]>([]);
   const [catsLoading, setCatsLoading] = useState(true);
+  const [projects, setProjects] = useState<Project[]>([]);
 
   // form
   const [txnDate, setTxnDate] = useState(() => new Date().toISOString().slice(0, 10));
@@ -40,6 +44,7 @@ export default function TransactionsClient() {
   const [vendor, setVendor] = useState("");
   const [description, setDescription] = useState("");
   const [category, setCategory] = useState("");
+  const [projectId, setProjectId] = useState("");
 
   const money = useMemo(
     () => (n: number) => n.toLocaleString(undefined, { style: "currency", currency: "USD" }),
@@ -78,9 +83,17 @@ export default function TransactionsClient() {
 
     const { data, error } = await supabase
       .from("transactions")
-      .select("id, txn_date, type, amount, vendor, description, category, source")
+      .select("id, txn_date, type, amount, vendor, description, category, source, project_id")
       .order("txn_date", { ascending: false })
       .limit(300);
+
+    const { data: projData } = await supabase
+      .from("projects")
+      .select("id, name")
+      .eq("user_id", sessionData.session.user.id)
+      .neq("status", "archived")
+      .order("name");
+    setProjects((projData as Project[]) ?? []);
 
     if (error) { setLoading(false); return setError(error.message); }
 
@@ -142,12 +155,14 @@ export default function TransactionsClient() {
       description: description || null,
       category: category || null,
       source: "manual",
+      project_id: projectId || null,
     });
 
     if (error) return setError(error.message);
     setAmount("");
     setVendor("");
     setDescription("");
+    setProjectId("");
     await load();
   };
 
@@ -281,6 +296,22 @@ export default function TransactionsClient() {
             </div>
           </div>
 
+          {projects.length > 0 && (
+            <div>
+              <label className="text-sm opacity-60 block mb-1">Project (optional)</label>
+              <select
+                className="w-full border rounded px-3 py-2 bg-transparent"
+                value={projectId}
+                onChange={(e) => setProjectId(e.target.value)}
+              >
+                <option value="">No project</option>
+                {projects.map((p) => (
+                  <option key={p.id} value={p.id}>{p.name}</option>
+                ))}
+              </select>
+            </div>
+          )}
+
           {error && <p className="text-red-600 text-sm">{error}</p>}
 
           <div className="flex gap-2 mt-1">
@@ -345,6 +376,7 @@ export default function TransactionsClient() {
                       {r.category || "Uncategorized"} •{" "}
                       {hasReceipt ? "✅ Receipt" : "No receipt"}
                       {r.source === "plaid" ? " • Bank" : ""}
+                      {r.project_id && projects.find(p => p.id === r.project_id) ? ` • ${projects.find(p => p.id === r.project_id)!.name}` : ""}
                     </span>
                   </div>
                 </a>

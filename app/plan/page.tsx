@@ -91,6 +91,13 @@ const MODULES: ModuleInfo[] = [
     price: "$6 / mo",
     features: ["Trip log with from/to locations", "70¢/mile IRS deduction calc", "Yearly summary", "Export-ready for tax time"],
   },
+  {
+    id: "budgeting",
+    name: "Budgeting",
+    description: "Set monthly spending limits per category and track actual vs budget with a progress dashboard.",
+    price: "$6 / mo",
+    features: ["Per-category monthly budgets", "Visual progress bars", "Over-budget alerts", "Unbudgeted spending summary"],
+  },
 ];
 
 type ActiveMap = Partial<Record<ModuleName, { status: string; stripe_customer_id: string | null }>>;

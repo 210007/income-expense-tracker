@@ -36,6 +36,7 @@ STRIPE_TAX_PRICE_ID=               # Stripe Price ID for the Tax Reporting modul
 STRIPE_INVENTORY_PRICE_ID=         # Stripe Price ID for the Inventory module ($12/mo)
 STRIPE_TEAM_PRICE_ID=              # Stripe Price ID for the Team Access module ($15/mo)
 STRIPE_MILEAGE_PRICE_ID=           # Stripe Price ID for the Mileage Tracking module ($6/mo)
+STRIPE_BUDGETING_PRICE_ID=         # Stripe Price ID for the Budgeting module ($6/mo)
 STRIPE_RECURRING_PRICE_ID=         # Stripe Price ID for the Recurring Transactions module ($6/mo)
 STRIPE_SCHEDULING_PRICE_ID=        # Stripe Price ID for the Scheduling module ($9/mo)
 CRON_SECRET=                       # Random secret string — add to Vercel env vars too; guards /api/cron/* routes
