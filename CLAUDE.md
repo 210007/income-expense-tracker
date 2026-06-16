@@ -28,6 +28,7 @@ STRIPE_SECRET_KEY=
 STRIPE_WEBHOOK_SECRET=             # from `stripe listen` locally or Stripe dashboard webhook signing secret
 NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=
 STRIPE_INVOICING_PRICE_ID=         # Stripe Price ID for the Invoicing module subscription
+CRON_SECRET=                       # Random secret string — add to Vercel env vars too; guards /api/cron/* routes
 ```
 
 ## Architecture

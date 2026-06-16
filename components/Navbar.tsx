@@ -28,6 +28,8 @@ export default function Navbar() {
     { href: "/customers", label: "Customers" },
     { href: "/transactions", label: "Transactions" },
     { href: "/invoices", label: "Invoices" },
+    { href: "/recurring", label: "Recurring" },
+    { href: "/appointments", label: "Appointments" },
     { href: "/export", label: "Export" },
   ];
 
