@@ -129,6 +129,9 @@ export default function RecurringInvoicesPage() {
                 </div>
                 <div className="flex items-center gap-3 shrink-0">
                   <span className="font-medium tabular-nums text-sm">{fmtMoney(total)}</span>
+                  <Link href={`/recurring-invoices/${r.id}/edit`} className="text-xs border rounded px-2 py-1 hover:opacity-70 opacity-60">
+                    Edit
+                  </Link>
                   <button
                     onClick={() => toggle(r.id, !r.active)}
                     className={`text-xs border rounded px-2 py-1 hover:opacity-70 ${r.active ? "opacity-60" : "border-green-500 text-green-600 dark:text-green-400"}`}

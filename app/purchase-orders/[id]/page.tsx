@@ -119,6 +119,12 @@ export default function PODetailPage() {
         <div className="flex flex-col items-end gap-2">
           <div className="flex gap-2">
             <button
+              onClick={() => router.push(`/purchase-orders/${po.id}/edit`)}
+              className="border rounded px-3 py-1.5 text-sm hover:opacity-70"
+            >
+              Edit
+            </button>
+            <button
               onClick={() => window.open(`/purchase-orders/${po.id}/print`, "_blank")}
               className="border rounded px-3 py-1.5 text-sm hover:opacity-70"
             >
