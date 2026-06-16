@@ -16,6 +16,10 @@ const MODULE_PRICES: Record<string, string> = {
   accounts_payable: process.env.STRIPE_ACCOUNTS_PAYABLE_PRICE_ID!,
   recurring: process.env.STRIPE_RECURRING_PRICE_ID!,
   scheduling: process.env.STRIPE_SCHEDULING_PRICE_ID!,
+  projects: process.env.STRIPE_PROJECTS_PRICE_ID!,
+  tax: process.env.STRIPE_TAX_PRICE_ID!,
+  inventory: process.env.STRIPE_INVENTORY_PRICE_ID!,
+  team: process.env.STRIPE_TEAM_PRICE_ID!,
 };
 
 export async function POST(req: NextRequest) {

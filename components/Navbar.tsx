@@ -31,8 +31,12 @@ export default function Navbar() {
     { href: "/estimates", label: "Estimates" },
     { href: "/time", label: "Time" },
     { href: "/bills", label: "Bills" },
+    { href: "/projects", label: "Projects" },
+    { href: "/inventory", label: "Inventory" },
     { href: "/recurring", label: "Recurring" },
     { href: "/appointments", label: "Appointments" },
+    { href: "/tax", label: "Tax" },
+    { href: "/team", label: "Team" },
     { href: "/export", label: "Export" },
   ];
 
