@@ -32,29 +32,50 @@ export async function POST(req: NextRequest) {
   const { data: { user }, error: authError } = await supabase.auth.getUser(token);
   if (authError || !user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const { module } = await req.json();
-  const priceId = MODULE_PRICES[module];
-  if (!priceId) return NextResponse.json({ error: "Unknown module" }, { status: 400 });
+  const body = await req.json();
 
+  // Support both single module and cart (array of modules)
+  const modules: string[] = body.modules
+    ? body.modules
+    : body.module
+    ? [body.module]
+    : [];
+
+  if (modules.length === 0) return NextResponse.json({ error: "No modules selected" }, { status: 400 });
+
+  // Validate all price IDs exist
+  for (const mod of modules) {
+    if (!MODULE_PRICES[mod]) return NextResponse.json({ error: `Unknown module: ${mod}` }, { status: 400 });
+  }
+
+  // Filter out already-active modules
   const { data: existing } = await supabase
     .from("user_modules")
-    .select("status")
+    .select("module, status")
     .eq("user_id", user.id)
-    .eq("module", module)
-    .single();
+    .in("module", modules);
 
-  if (existing?.status === "active") {
-    return NextResponse.json({ error: "Module already active" }, { status: 400 });
+  const activeModules = new Set((existing ?? []).filter((r) => r.status === "active").map((r) => r.module));
+  const toSubscribe = modules.filter((m) => !activeModules.has(m));
+
+  if (toSubscribe.length === 0) {
+    return NextResponse.json({ error: "All selected modules are already active" }, { status: 400 });
   }
 
   const origin = req.headers.get("origin") ?? "http://localhost:3000";
 
   const session = await stripe.checkout.sessions.create({
     mode: "subscription",
-    line_items: [{ price: priceId, quantity: 1 }],
-    success_url: `${origin}/plan?success=${module}`,
+    line_items: toSubscribe.map((mod) => ({ price: MODULE_PRICES[mod], quantity: 1 })),
+    success_url: `${origin}/plan?success=${toSubscribe[0]}`,
     cancel_url: `${origin}/plan`,
-    metadata: { user_id: user.id, module },
+    metadata: {
+      user_id: user.id,
+      // Store all module names for webhook processing
+      modules: toSubscribe.join(","),
+      // Keep singular for backward compat
+      module: toSubscribe[0],
+    },
     customer_email: user.email,
   });
 

@@ -37,20 +37,26 @@ export async function POST(req: NextRequest) {
         break;
       }
 
-      // Module subscription
+      // Module subscription (single or cart)
       const userId = session.metadata?.user_id;
-      const module = session.metadata?.module;
-      if (!userId || !module) break;
+      if (!userId) break;
+
+      const modulesStr = session.metadata?.modules;
+      const singleModule = session.metadata?.module;
+      const moduleList = modulesStr ? modulesStr.split(",") : singleModule ? [singleModule] : [];
+      if (moduleList.length === 0) break;
 
       const sub = await stripe.subscriptions.retrieve(session.subscription as string);
 
-      await supabase.from("user_modules").upsert({
-        user_id: userId,
-        module,
-        stripe_subscription_id: sub.id,
-        stripe_customer_id: sub.customer as string,
-        status: "active",
-      }, { onConflict: "user_id,module" });
+      for (const module of moduleList) {
+        await supabase.from("user_modules").upsert({
+          user_id: userId,
+          module,
+          stripe_subscription_id: sub.id,
+          stripe_customer_id: sub.customer as string,
+          status: "active",
+        }, { onConflict: "user_id,module" });
+      }
       break;
     }
 
