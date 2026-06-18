@@ -21,9 +21,9 @@ export async function GET() {
   const results = Object.entries(VARS).map(([name, val]) => {
     if (!val) return { name, status: "MISSING" };
     if (!val.startsWith("price_")) return { name, status: `BAD (starts with: ${val.slice(0, 5)})` };
-    if (seen.has(val)) return { name, status: `DUPLICATE of ${seen.get(val)}` };
+    if (seen.has(val)) return { name, status: `DUPLICATE of ${seen.get(val)}`, ends: val.slice(-6) };
     seen.set(val, name);
-    return { name, status: "OK" };
+    return { name, status: "OK", ends: val.slice(-6) };
   });
   return NextResponse.json(results);
 }
