@@ -64,20 +64,25 @@ export async function POST(req: NextRequest) {
 
   const origin = req.headers.get("origin") ?? "http://localhost:3000";
 
-  const session = await stripe.checkout.sessions.create({
-    mode: "subscription",
-    line_items: toSubscribe.map((mod) => ({ price: MODULE_PRICES[mod], quantity: 1 })),
-    success_url: `${origin}/plan?success=${toSubscribe[0]}`,
-    cancel_url: `${origin}/plan`,
-    metadata: {
-      user_id: user.id,
-      // Store all module names for webhook processing
-      modules: toSubscribe.join(","),
-      // Keep singular for backward compat
-      module: toSubscribe[0],
-    },
-    customer_email: user.email,
-  });
+  let session;
+  try {
+    session = await stripe.checkout.sessions.create({
+      mode: "subscription",
+      line_items: toSubscribe.map((mod) => ({ price: MODULE_PRICES[mod], quantity: 1 })),
+      success_url: `${origin}/plan?success=${toSubscribe[0]}`,
+      cancel_url: `${origin}/plan`,
+      metadata: {
+        user_id: user.id,
+        modules: toSubscribe.join(","),
+        module: toSubscribe[0],
+      },
+      customer_email: user.email,
+    });
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : String(err);
+    console.error("Stripe checkout error:", msg);
+    return NextResponse.json({ error: msg }, { status: 500 });
+  }
 
   return NextResponse.json({ url: session.url });
 }
