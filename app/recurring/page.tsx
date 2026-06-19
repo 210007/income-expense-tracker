@@ -67,16 +67,30 @@ export default function RecurringPage() {
   const fmtDate = (iso: string) =>
     new Date(iso).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" });
 
-  if (loading) return <main className="p-6 max-w-4xl mx-auto"><p className="opacity-50">Loading…</p></main>;
+  if (loading) {
+    return (
+      <main className="p-6 max-w-4xl mx-auto">
+        <div className="animate-pulse space-y-3">
+          <div className="h-8 w-48 bg-gray-200 dark:bg-gray-800 rounded-2xl" />
+          <div className="h-4 w-32 bg-gray-200 dark:bg-gray-800 rounded-2xl" />
+          <div className="mt-6 space-y-2">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="h-16 bg-gray-200 dark:bg-gray-800 rounded-2xl" />
+            ))}
+          </div>
+        </div>
+      </main>
+    );
+  }
 
   if (gated) {
     return (
       <main className="p-6 max-w-4xl mx-auto">
-        <h1 className="text-2xl font-semibold mb-2">Recurring Transactions</h1>
-        <p className="opacity-60 mb-6 text-sm">This module isn&apos;t active on your plan.</p>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Recurring Transactions</h1>
+        <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">This module isn&apos;t active on your plan.</p>
         <Link
           href="/plan"
-          className="inline-block bg-black text-white dark:bg-white dark:text-black px-4 py-2 rounded font-medium text-sm hover:opacity-80"
+          className="inline-block px-5 py-2.5 brand-gradient text-white rounded-xl text-sm font-semibold hover:opacity-90 transition-opacity"
         >
           Add Recurring — $6 / mo
         </Link>
@@ -88,38 +102,40 @@ export default function RecurringPage() {
     <main className="p-6 max-w-4xl mx-auto">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-semibold">Recurring Transactions</h1>
-          <p className="text-sm opacity-50 mt-0.5">
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Recurring Transactions</h1>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
             {rows.length} series · auto-logged on schedule
           </p>
         </div>
         <Link
           href="/recurring/new"
-          className="border rounded px-3 py-1.5 text-sm font-medium hover:opacity-70"
+          className="px-5 py-2.5 brand-gradient text-white rounded-xl text-sm font-semibold hover:opacity-90 transition-opacity"
         >
           New Series
         </Link>
       </div>
 
-      {error && <p className="text-red-600 mb-4">{error}</p>}
+      {error && <p className="text-red-600 mb-4 text-sm">{error}</p>}
 
       {rows.length === 0 ? (
-        <p className="opacity-50 text-sm">No recurring transactions yet. Add your first one above.</p>
+        <div className="text-center py-20 border border-dashed border-gray-200 dark:border-gray-800 rounded-2xl">
+          <p className="text-sm text-gray-500 dark:text-gray-400">No recurring transactions yet. Add your first one above.</p>
+        </div>
       ) : (
         <div className="grid gap-2">
           {rows.map((r) => (
             <div
               key={r.id}
-              className={`border rounded-lg p-4 flex items-center justify-between gap-4 ${!r.active ? "opacity-40" : ""}`}
+              className={`flex items-center gap-4 px-4 py-3.5 bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-2xl hover:border-gray-300 dark:hover:border-gray-600 hover:shadow-sm transition-all ${!r.active ? "opacity-40" : ""}`}
             >
-              <div className="min-w-0">
+              <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
-                  <span className="font-medium">{r.vendor}</span>
-                  <span className={`text-xs font-medium ${r.type === "income" ? "text-green-600 dark:text-green-400" : "text-red-500"}`}>
+                  <span className="font-semibold text-gray-900 dark:text-white">{r.vendor}</span>
+                  <span className={`text-xs font-semibold ${r.type === "income" ? "text-green-600 dark:text-green-400" : "text-red-500"}`}>
                     {r.type === "income" ? "+" : "−"}{fmtMoney(r.amount)}
                   </span>
                 </div>
-                <div className="text-sm opacity-60 mt-0.5 flex gap-2">
+                <div className="text-sm text-gray-400 dark:text-gray-500 mt-0.5 flex gap-2">
                   <span>{FREQ_LABEL[r.frequency]}</span>
                   <span>·</span>
                   <span>Next: {fmtDate(r.next_run_date)}</span>
@@ -129,7 +145,7 @@ export default function RecurringPage() {
               <button
                 onClick={() => toggleActive(r.id, r.active)}
                 disabled={toggling === r.id}
-                className="border rounded px-3 py-1.5 text-xs font-medium hover:opacity-70 disabled:opacity-40 whitespace-nowrap"
+                className="px-5 py-2.5 border border-gray-200 dark:border-gray-700 rounded-xl text-sm font-semibold text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors disabled:opacity-40 whitespace-nowrap"
               >
                 {toggling === r.id ? "…" : r.active ? "Pause" : "Resume"}
               </button>

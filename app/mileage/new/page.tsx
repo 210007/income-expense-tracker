@@ -51,34 +51,58 @@ export default function NewMileagePage() {
     router.push("/mileage");
   };
 
-  if (loading) return <main className="p-6 max-w-4xl mx-auto"><p className="opacity-50">Loading…</p></main>;
-  if (gated) return <main className="p-6 max-w-4xl mx-auto"><p className="opacity-60 text-sm mb-4">Mileage module not active.</p><a href="/plan" className="text-sm underline">Go to My Plan</a></main>;
+  if (loading) {
+    return (
+      <main className="p-6 max-w-4xl mx-auto">
+        <div className="animate-pulse space-y-4">
+          <div className="h-8 bg-gray-200 dark:bg-gray-800 rounded-2xl w-32" />
+          <div className="bg-gray-200 dark:bg-gray-800 rounded-2xl h-64 max-w-lg" />
+        </div>
+      </main>
+    );
+  }
+
+  if (gated) {
+    return (
+      <main className="p-6 max-w-4xl mx-auto">
+        <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">Mileage module not active.</p>
+        <a href="/plan" className="px-5 py-2.5 brand-gradient text-white rounded-xl text-sm font-semibold hover:opacity-90 transition-opacity inline-block">
+          Go to My Plan
+        </a>
+      </main>
+    );
+  }
 
   return (
     <main className="p-6 max-w-4xl mx-auto">
-      <div className="flex items-center gap-4 mb-6">
-        <button onClick={() => router.back()} className="opacity-50 hover:opacity-80 text-sm">← Back</button>
-        <h1 className="text-2xl font-semibold">Log Trip</h1>
+      <div className="flex items-center gap-3 mb-6">
+        <button
+          onClick={() => router.back()}
+          className="w-8 h-8 flex items-center justify-center rounded-xl border border-gray-200 dark:border-gray-700 text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+        >
+          ←
+        </button>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Log Trip</h1>
       </div>
 
-      <div className="border rounded-xl p-5 grid gap-4 max-w-lg">
+      <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-2xl p-5 space-y-4 max-w-lg">
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="text-sm opacity-60 block mb-1">Date *</label>
+            <label className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider block mb-1.5">Date *</label>
             <input
               type="date"
-              className="w-full border rounded px-3 py-2 bg-transparent text-sm"
+              className="w-full border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2.5 bg-transparent text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20"
               value={tripDate}
               onChange={(e) => setTripDate(e.target.value)}
             />
           </div>
           <div>
-            <label className="text-sm opacity-60 block mb-1">Miles *</label>
+            <label className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider block mb-1.5">Miles *</label>
             <input
               type="number"
               min="0.1"
               step="0.1"
-              className="w-full border rounded px-3 py-2 bg-transparent text-sm"
+              className="w-full border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2.5 bg-transparent text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20"
               placeholder="e.g. 12.5"
               value={miles}
               onChange={(e) => setMiles(e.target.value)}
@@ -87,9 +111,9 @@ export default function NewMileagePage() {
         </div>
 
         <div>
-          <label className="text-sm opacity-60 block mb-1">Purpose *</label>
+          <label className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider block mb-1.5">Purpose *</label>
           <input
-            className="w-full border rounded px-3 py-2 bg-transparent text-sm"
+            className="w-full border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2.5 bg-transparent text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20"
             placeholder="e.g. Client meeting, Supply run, Site visit"
             value={purpose}
             onChange={(e) => setPurpose(e.target.value)}
@@ -98,18 +122,18 @@ export default function NewMileagePage() {
 
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="text-sm opacity-60 block mb-1">From</label>
+            <label className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider block mb-1.5">From</label>
             <input
-              className="w-full border rounded px-3 py-2 bg-transparent text-sm"
+              className="w-full border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2.5 bg-transparent text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20"
               placeholder="Starting location"
               value={from}
               onChange={(e) => setFrom(e.target.value)}
             />
           </div>
           <div>
-            <label className="text-sm opacity-60 block mb-1">To</label>
+            <label className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider block mb-1.5">To</label>
             <input
-              className="w-full border rounded px-3 py-2 bg-transparent text-sm"
+              className="w-full border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2.5 bg-transparent text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20"
               placeholder="Destination"
               value={to}
               onChange={(e) => setTo(e.target.value)}
@@ -118,9 +142,15 @@ export default function NewMileagePage() {
         </div>
 
         {miles && !isNaN(parseFloat(miles)) && parseFloat(miles) > 0 && (
-          <p className="text-sm opacity-50">
-            Estimated deduction: <span className="font-medium">{new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(parseFloat(miles) * 0.70)}</span> at 70¢/mile
-          </p>
+          <div className="bg-gray-50 dark:bg-gray-800 rounded-xl px-4 py-3">
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              Estimated deduction:{" "}
+              <span className="font-semibold text-gray-900 dark:text-white">
+                {new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(parseFloat(miles) * 0.70)}
+              </span>{" "}
+              at 70¢/mile
+            </p>
+          </div>
         )}
 
         {error && <p className="text-red-600 text-sm">{error}</p>}
@@ -128,7 +158,7 @@ export default function NewMileagePage() {
         <button
           onClick={save}
           disabled={saving}
-          className="w-full bg-black text-white dark:bg-white dark:text-black py-2.5 rounded font-medium disabled:opacity-40 hover:opacity-80 text-sm"
+          className="w-full px-5 py-2.5 brand-gradient text-white rounded-xl text-sm font-semibold hover:opacity-90 transition-opacity disabled:opacity-40"
         >
           {saving ? "Saving…" : "Log Trip"}
         </button>

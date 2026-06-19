@@ -96,26 +96,61 @@ export default function NewEstimatePage() {
   const fmtMoney = (n: number) =>
     new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(n);
 
-  if (loading) return <main className="p-6 max-w-4xl mx-auto"><p className="opacity-50">Loading…</p></main>;
-  if (gated) return <main className="p-6 max-w-4xl mx-auto"><p className="opacity-60 text-sm mb-4">Estimates module not active.</p><a href="/plan" className="text-sm underline">Go to My Plan</a></main>;
+  if (loading) {
+    return (
+      <main className="p-6 max-w-4xl mx-auto space-y-4">
+        <div className="animate-pulse bg-gray-200 dark:bg-gray-800 rounded-2xl h-10 w-48" />
+        <div className="animate-pulse bg-gray-200 dark:bg-gray-800 rounded-2xl h-40" />
+        <div className="animate-pulse bg-gray-200 dark:bg-gray-800 rounded-2xl h-52" />
+      </main>
+    );
+  }
+
+  if (gated) {
+    return (
+      <main className="p-6 max-w-4xl mx-auto">
+        <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">Estimates module not active.</p>
+        <a href="/plan" className="text-sm underline text-gray-700 dark:text-gray-300">Go to My Plan</a>
+      </main>
+    );
+  }
 
   return (
     <main className="p-6 max-w-4xl mx-auto">
-      <div className="flex items-center gap-4 mb-6">
-        <button onClick={() => router.back()} className="opacity-50 hover:opacity-80 text-sm">← Back</button>
-        <h1 className="text-2xl font-semibold">New Estimate</h1>
+      <div className="flex items-center gap-3 mb-6">
+        <button
+          onClick={() => router.back()}
+          className="w-8 h-8 flex items-center justify-center rounded-xl border border-gray-200 dark:border-gray-700 text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+          aria-label="Go back"
+        >
+          ←
+        </button>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">New Estimate</h1>
       </div>
 
       <div className="grid gap-5">
-        <section className="border rounded-xl p-5 grid gap-4">
+        {/* Header fields */}
+        <section className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-2xl p-5 grid gap-4">
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="text-sm opacity-60 block mb-1">Estimate #</label>
-              <input className="w-full border rounded px-3 py-2 bg-transparent font-mono" value={estimateNumber} onChange={(e) => setEstimateNumber(e.target.value)} />
+              <label className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider block mb-1.5">
+                Estimate #
+              </label>
+              <input
+                className="w-full border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2.5 bg-transparent text-sm font-mono focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                value={estimateNumber}
+                onChange={(e) => setEstimateNumber(e.target.value)}
+              />
             </div>
             <div>
-              <label className="text-sm opacity-60 block mb-1">Customer</label>
-              <select className="w-full border rounded px-3 py-2 bg-transparent" value={customerId} onChange={(e) => setCustomerId(e.target.value)}>
+              <label className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider block mb-1.5">
+                Customer
+              </label>
+              <select
+                className="w-full border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2.5 bg-white dark:bg-gray-900 text-sm focus:outline-none"
+                value={customerId}
+                onChange={(e) => setCustomerId(e.target.value)}
+              >
                 <option value="">— No customer —</option>
                 {customers.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
               </select>
@@ -123,46 +158,114 @@ export default function NewEstimatePage() {
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="text-sm opacity-60 block mb-1">Issue Date</label>
-              <input type="date" className="w-full border rounded px-3 py-2 bg-transparent" value={issueDate} onChange={(e) => setIssueDate(e.target.value)} />
+              <label className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider block mb-1.5">
+                Issue Date
+              </label>
+              <input
+                type="date"
+                className="w-full border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2.5 bg-transparent text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                value={issueDate}
+                onChange={(e) => setIssueDate(e.target.value)}
+              />
             </div>
             <div>
-              <label className="text-sm opacity-60 block mb-1">Expiry Date</label>
-              <input type="date" className="w-full border rounded px-3 py-2 bg-transparent" value={expiryDate} onChange={(e) => setExpiryDate(e.target.value)} />
+              <label className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider block mb-1.5">
+                Expiry Date
+              </label>
+              <input
+                type="date"
+                className="w-full border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2.5 bg-transparent text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                value={expiryDate}
+                onChange={(e) => setExpiryDate(e.target.value)}
+              />
             </div>
           </div>
         </section>
 
-        <section className="border rounded-xl p-5">
-          <h2 className="font-semibold mb-4">Line Items</h2>
+        {/* Line items */}
+        <section className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-2xl p-5">
+          <h2 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-4">
+            Line Items
+          </h2>
           <div className="grid gap-3">
             {items.map((item, i) => (
-              <div key={i} className="grid grid-cols-[1fr_80px_100px_32px] gap-2 items-center">
-                <input className="border rounded px-3 py-2 bg-transparent text-sm" placeholder="Description" value={item.description} onChange={(e) => updateItem(i, "description", e.target.value)} />
-                <input className="border rounded px-3 py-2 bg-transparent text-sm text-right" placeholder="Qty" type="number" min="0" value={item.quantity} onChange={(e) => updateItem(i, "quantity", e.target.value)} />
-                <input className="border rounded px-3 py-2 bg-transparent text-sm text-right" placeholder="Unit price" type="number" min="0" step="0.01" value={item.unit_price} onChange={(e) => updateItem(i, "unit_price", e.target.value)} />
-                <button onClick={() => setItems((prev) => prev.filter((_, idx) => idx !== i))} disabled={items.length === 1} className="opacity-30 hover:opacity-70 disabled:opacity-10 text-lg leading-none">×</button>
+              <div key={i} className="grid grid-cols-[1fr_80px_110px_32px] gap-2 items-center">
+                <input
+                  className="border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2.5 bg-transparent text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                  placeholder="Description"
+                  value={item.description}
+                  onChange={(e) => updateItem(i, "description", e.target.value)}
+                />
+                <input
+                  className="border border-gray-200 dark:border-gray-700 rounded-xl px-3 py-2.5 bg-transparent text-sm text-right focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                  placeholder="Qty"
+                  type="number"
+                  min="0"
+                  value={item.quantity}
+                  onChange={(e) => updateItem(i, "quantity", e.target.value)}
+                />
+                <input
+                  className="border border-gray-200 dark:border-gray-700 rounded-xl px-3 py-2.5 bg-transparent text-sm text-right focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                  placeholder="Unit price"
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={item.unit_price}
+                  onChange={(e) => updateItem(i, "unit_price", e.target.value)}
+                />
+                <button
+                  onClick={() => setItems((prev) => prev.filter((_, idx) => idx !== i))}
+                  disabled={items.length === 1}
+                  className="w-8 h-8 flex items-center justify-center rounded-xl border border-gray-200 dark:border-gray-700 text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-red-500 disabled:opacity-20 transition-colors text-lg leading-none"
+                >
+                  ×
+                </button>
               </div>
             ))}
           </div>
-          <button onClick={() => setItems((prev) => [...prev, newItem()])} className="mt-3 text-sm opacity-50 hover:opacity-80">+ Add line item</button>
-          <div className="flex justify-end mt-4 pt-4 border-t">
-            <span className="font-semibold text-lg">{fmtMoney(total)}</span>
+          <button
+            onClick={() => setItems((prev) => [...prev, newItem()])}
+            className="mt-3 text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors"
+          >
+            + Add line item
+          </button>
+          <div className="flex justify-end mt-4 pt-4 border-t border-gray-100 dark:border-gray-800">
+            <div className="text-right">
+              <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Total</p>
+              <span className="font-bold text-xl text-gray-900 dark:text-white tabular-nums">{fmtMoney(total)}</span>
+            </div>
           </div>
         </section>
 
-        <section className="border rounded-xl p-5">
-          <label className="text-sm opacity-60 block mb-1">Notes</label>
-          <textarea className="w-full border rounded px-3 py-2 bg-transparent resize-none text-sm" rows={3} placeholder="Terms, conditions, validity notes…" value={notes} onChange={(e) => setNotes(e.target.value)} />
+        {/* Notes */}
+        <section className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-2xl p-5">
+          <label className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider block mb-1.5">
+            Notes
+          </label>
+          <textarea
+            className="w-full border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2.5 bg-transparent resize-none text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+            rows={3}
+            placeholder="Terms, conditions, validity notes…"
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
+          />
         </section>
 
         {error && <p className="text-red-600 text-sm">{error}</p>}
 
         <div className="flex gap-3 justify-end">
-          <button onClick={() => save("draft")} disabled={saving} className="border rounded px-4 py-2 text-sm font-medium hover:opacity-70 disabled:opacity-40">
+          <button
+            onClick={() => save("draft")}
+            disabled={saving}
+            className="px-5 py-2.5 border border-gray-200 dark:border-gray-700 rounded-xl text-sm font-semibold text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors disabled:opacity-40"
+          >
             {saving ? "Saving…" : "Save as Draft"}
           </button>
-          <button onClick={() => save("sent")} disabled={saving} className="bg-black text-white dark:bg-white dark:text-black rounded px-4 py-2 text-sm font-medium hover:opacity-80 disabled:opacity-40">
+          <button
+            onClick={() => save("sent")}
+            disabled={saving}
+            className="px-5 py-2.5 brand-gradient text-white rounded-xl text-sm font-semibold hover:opacity-90 transition-opacity disabled:opacity-40"
+          >
             {saving ? "Saving…" : "Save & Mark Sent"}
           </button>
         </div>

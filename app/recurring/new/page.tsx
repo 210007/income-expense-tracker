@@ -78,37 +78,51 @@ export default function NewRecurringPage() {
     router.push("/recurring");
   };
 
-  if (loading) return <main className="p-6 max-w-4xl mx-auto"><p className="opacity-50">Loading…</p></main>;
+  if (loading) {
+    return (
+      <main className="p-6 max-w-4xl mx-auto">
+        <div className="animate-pulse space-y-3">
+          <div className="h-8 w-64 bg-gray-200 dark:bg-gray-800 rounded-2xl" />
+          <div className="h-80 bg-gray-200 dark:bg-gray-800 rounded-2xl mt-6" />
+        </div>
+      </main>
+    );
+  }
 
   if (gated) {
     return (
       <main className="p-6 max-w-4xl mx-auto">
-        <p className="opacity-60 mb-4 text-sm">Recurring Transactions module not active.</p>
-        <a href="/plan" className="text-sm underline">Go to My Plan</a>
+        <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">Recurring Transactions module not active.</p>
+        <a href="/plan" className="px-5 py-2.5 brand-gradient text-white rounded-xl text-sm font-semibold hover:opacity-90 transition-opacity">Go to My Plan</a>
       </main>
     );
   }
 
   return (
     <main className="p-6 max-w-4xl mx-auto">
-      <div className="flex items-center gap-4 mb-6">
-        <button onClick={() => router.back()} className="opacity-50 hover:opacity-80 text-sm">← Back</button>
-        <h1 className="text-2xl font-semibold">New Recurring Transaction</h1>
+      <div className="flex items-center gap-3 mb-6">
+        <button
+          onClick={() => router.back()}
+          className="w-8 h-8 flex items-center justify-center rounded-xl border border-gray-200 dark:border-gray-700 text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+        >
+          ←
+        </button>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">New Recurring Transaction</h1>
       </div>
 
-      <div className="border rounded-xl p-5 grid gap-4 max-w-lg">
+      <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-2xl p-5 space-y-4 max-w-lg">
         {/* Type toggle */}
         <div>
-          <label className="text-sm opacity-60 block mb-2">Type</label>
+          <label className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider block mb-1.5">Type</label>
           <div className="flex gap-2">
             {(["expense", "income"] as const).map((t) => (
               <button
                 key={t}
                 onClick={() => setType(t)}
-                className={`flex-1 py-2 rounded border text-sm font-medium capitalize transition-colors ${
+                className={`flex-1 py-2.5 rounded-xl border text-sm font-semibold capitalize transition-colors ${
                   type === t
-                    ? "bg-black text-white dark:bg-white dark:text-black border-transparent"
-                    : "hover:opacity-70"
+                    ? "bg-gray-900 text-white dark:bg-white dark:text-gray-900 border-transparent"
+                    : "border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
                 }`}
               >
                 {t}
@@ -118,9 +132,9 @@ export default function NewRecurringPage() {
         </div>
 
         <div>
-          <label className="text-sm opacity-60 block mb-1">Vendor / Payee *</label>
+          <label className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider block mb-1.5">Vendor / Payee *</label>
           <input
-            className="w-full border rounded px-3 py-2 bg-transparent"
+            className="w-full border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2.5 bg-transparent text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20"
             placeholder="e.g. Netflix, Office Rent"
             value={vendor}
             onChange={(e) => setVendor(e.target.value)}
@@ -129,21 +143,21 @@ export default function NewRecurringPage() {
 
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="text-sm opacity-60 block mb-1">Amount *</label>
+            <label className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider block mb-1.5">Amount *</label>
             <input
               type="number"
               min="0"
               step="0.01"
-              className="w-full border rounded px-3 py-2 bg-transparent"
+              className="w-full border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2.5 bg-transparent text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20"
               placeholder="0.00"
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
             />
           </div>
           <div>
-            <label className="text-sm opacity-60 block mb-1">Frequency</label>
+            <label className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider block mb-1.5">Frequency</label>
             <select
-              className="w-full border rounded px-3 py-2 bg-transparent"
+              className="w-full border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2.5 bg-white dark:bg-gray-900 text-sm focus:outline-none"
               value={frequency}
               onChange={(e) => setFrequency(e.target.value)}
             >
@@ -155,10 +169,10 @@ export default function NewRecurringPage() {
         </div>
 
         <div>
-          <label className="text-sm opacity-60 block mb-1">Category</label>
+          <label className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider block mb-1.5">Category</label>
           {categories.length > 0 ? (
             <select
-              className="w-full border rounded px-3 py-2 bg-transparent"
+              className="w-full border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2.5 bg-white dark:bg-gray-900 text-sm focus:outline-none"
               value={category}
               onChange={(e) => setCategory(e.target.value)}
             >
@@ -167,7 +181,7 @@ export default function NewRecurringPage() {
             </select>
           ) : (
             <input
-              className="w-full border rounded px-3 py-2 bg-transparent"
+              className="w-full border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2.5 bg-transparent text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20"
               placeholder="e.g. Software, Utilities"
               value={category}
               onChange={(e) => setCategory(e.target.value)}
@@ -176,9 +190,9 @@ export default function NewRecurringPage() {
         </div>
 
         <div>
-          <label className="text-sm opacity-60 block mb-1">Description</label>
+          <label className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider block mb-1.5">Description</label>
           <input
-            className="w-full border rounded px-3 py-2 bg-transparent"
+            className="w-full border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2.5 bg-transparent text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20"
             placeholder="Optional notes"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
@@ -187,19 +201,21 @@ export default function NewRecurringPage() {
 
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="text-sm opacity-60 block mb-1">Start Date</label>
+            <label className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider block mb-1.5">Start Date</label>
             <input
               type="date"
-              className="w-full border rounded px-3 py-2 bg-transparent"
+              className="w-full border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2.5 bg-transparent text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20"
               value={startDate}
               onChange={(e) => setStartDate(e.target.value)}
             />
           </div>
           <div>
-            <label className="text-sm opacity-60 block mb-1">End Date <span className="opacity-40">(optional)</span></label>
+            <label className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider block mb-1.5">
+              End Date <span className="font-normal normal-case tracking-normal opacity-60">(optional)</span>
+            </label>
             <input
               type="date"
-              className="w-full border rounded px-3 py-2 bg-transparent"
+              className="w-full border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2.5 bg-transparent text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20"
               value={endDate}
               onChange={(e) => setEndDate(e.target.value)}
             />
@@ -211,7 +227,7 @@ export default function NewRecurringPage() {
         <button
           onClick={save}
           disabled={saving}
-          className="w-full bg-black text-white dark:bg-white dark:text-black py-2.5 rounded font-medium disabled:opacity-40 hover:opacity-80"
+          className="w-full px-5 py-2.5 brand-gradient text-white rounded-xl text-sm font-semibold hover:opacity-90 transition-opacity disabled:opacity-40"
         >
           {saving ? "Saving…" : "Create Recurring Transaction"}
         </button>

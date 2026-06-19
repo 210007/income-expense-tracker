@@ -286,10 +286,20 @@ export default function CustomerDetailPage() {
   const fieldTypeLabel = (t: string) => ({ text: "Text", number: "Number", date: "Date", boolean: "Yes/No" }[t] ?? t);
   const fullAddress = (c: Customer) => [c.address_street, c.address_city, c.address_state, c.address_zip].filter(Boolean).join(", ");
 
-  if (loading) return <main className="p-6 max-w-4xl mx-auto"><p className="opacity-50">Loading…</p></main>;
+  if (loading) return (
+    <main className="p-6 max-w-4xl mx-auto">
+      <div className="animate-pulse space-y-4">
+        <div className="bg-gray-200 dark:bg-gray-800 rounded-2xl h-8 w-48" />
+        <div className="bg-gray-200 dark:bg-gray-800 rounded-2xl h-48" />
+        <div className="bg-gray-200 dark:bg-gray-800 rounded-2xl h-32" />
+        <div className="bg-gray-200 dark:bg-gray-800 rounded-2xl h-32" />
+      </div>
+    </main>
+  );
+
   if (error || !customer) return (
     <main className="p-6 max-w-4xl mx-auto">
-      <a href="/customers" className="text-sm opacity-50 hover:opacity-100 mb-4 inline-block">← Customers</a>
+      <a href="/customers" className="w-8 h-8 flex items-center justify-center rounded-xl border border-gray-200 dark:border-gray-700 text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors mb-4 inline-flex">←</a>
       <p className="text-red-600">{error ?? "Customer not found."}</p>
     </main>
   );
@@ -298,16 +308,30 @@ export default function CustomerDetailPage() {
 
   return (
     <main className="p-6 max-w-4xl mx-auto">
-      <a href="/customers" className="text-sm opacity-50 hover:opacity-100 mb-4 inline-block">← Customers</a>
+      <a
+        href="/customers"
+        className="w-8 h-8 flex items-center justify-center rounded-xl border border-gray-200 dark:border-gray-700 text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors mb-4 inline-flex"
+      >
+        ←
+      </a>
 
       {/* Customer info */}
-      <section className="border rounded-lg p-5 mb-4">
+      <section className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-2xl p-5 mb-4">
         <div className="flex items-start justify-between mb-4">
-          <h1 className="text-2xl font-semibold">{customer.name}</h1>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{customer.name}</h1>
           {!editing && (
             <div className="flex gap-2">
-              <button onClick={startEdit} className="border rounded px-3 py-1.5 text-sm font-medium hover:opacity-70">Edit</button>
-              <button onClick={deleteCustomer} disabled={deleting} className="border rounded px-3 py-1.5 text-sm font-medium text-red-600 hover:opacity-70 disabled:opacity-40">
+              <button
+                onClick={startEdit}
+                className="px-5 py-2.5 border border-gray-200 dark:border-gray-700 rounded-xl text-sm font-semibold text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+              >
+                Edit
+              </button>
+              <button
+                onClick={deleteCustomer}
+                disabled={deleting}
+                className="px-5 py-2.5 border border-red-200 dark:border-red-800 rounded-xl text-sm font-semibold text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors disabled:opacity-40"
+              >
                 {deleting ? "Deleting…" : "Delete"}
               </button>
             </div>
@@ -317,23 +341,37 @@ export default function CustomerDetailPage() {
         {editing ? (
           <div className="grid gap-3">
             <div>
-              <label className="text-sm opacity-60 block mb-1">Name *</label>
-              <input className="w-full border rounded px-3 py-2 bg-transparent" value={editName} onChange={(e) => setEditName(e.target.value)} />
+              <label className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider block mb-1.5">Name *</label>
+              <input
+                className="w-full border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2.5 bg-transparent text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                value={editName}
+                onChange={(e) => setEditName(e.target.value)}
+              />
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="text-sm opacity-60 block mb-1">Email</label>
-                <input type="email" className="w-full border rounded px-3 py-2 bg-transparent" value={editEmail} onChange={(e) => setEditEmail(e.target.value)} />
+                <label className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider block mb-1.5">Email</label>
+                <input
+                  type="email"
+                  className="w-full border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2.5 bg-transparent text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                  value={editEmail}
+                  onChange={(e) => setEditEmail(e.target.value)}
+                />
               </div>
               <div>
-                <label className="text-sm opacity-60 block mb-1">Phone</label>
-                <input type="tel" className="w-full border rounded px-3 py-2 bg-transparent" value={editPhone} onChange={(e) => setEditPhone(e.target.value)} />
+                <label className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider block mb-1.5">Phone</label>
+                <input
+                  type="tel"
+                  className="w-full border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2.5 bg-transparent text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                  value={editPhone}
+                  onChange={(e) => setEditPhone(e.target.value)}
+                />
               </div>
             </div>
             <div>
-              <label className="text-sm opacity-60 block mb-1">Street Address</label>
+              <label className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider block mb-1.5">Street Address</label>
               <AddressAutocomplete
-                className="w-full border rounded px-3 py-2 bg-transparent"
+                className="w-full border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2.5 bg-transparent text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20"
                 placeholder="123 Main St"
                 value={editStreet}
                 onChange={setEditStreet}
@@ -347,44 +385,73 @@ export default function CustomerDetailPage() {
             </div>
             <div className="grid grid-cols-3 gap-3">
               <div>
-                <label className="text-sm opacity-60 block mb-1">City</label>
-                <input className="w-full border rounded px-3 py-2 bg-transparent" placeholder="Springfield" value={editCity} onChange={(e) => setEditCity(e.target.value)} />
+                <label className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider block mb-1.5">City</label>
+                <input
+                  className="w-full border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2.5 bg-transparent text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                  placeholder="Springfield"
+                  value={editCity}
+                  onChange={(e) => setEditCity(e.target.value)}
+                />
               </div>
               <div>
-                <label className="text-sm opacity-60 block mb-1">State</label>
-                <input className="w-full border rounded px-3 py-2 bg-transparent" placeholder="IL" value={editState} onChange={(e) => setEditState(e.target.value)} />
+                <label className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider block mb-1.5">State</label>
+                <input
+                  className="w-full border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2.5 bg-transparent text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                  placeholder="IL"
+                  value={editState}
+                  onChange={(e) => setEditState(e.target.value)}
+                />
               </div>
               <div>
-                <label className="text-sm opacity-60 block mb-1">Zip Code</label>
-                <input className="w-full border rounded px-3 py-2 bg-transparent" placeholder="62701" value={editZip} onChange={(e) => setEditZip(e.target.value)} />
+                <label className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider block mb-1.5">Zip Code</label>
+                <input
+                  className="w-full border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2.5 bg-transparent text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                  placeholder="62701"
+                  value={editZip}
+                  onChange={(e) => setEditZip(e.target.value)}
+                />
               </div>
             </div>
             <div>
-              <label className="text-sm opacity-60 block mb-1">Notes</label>
-              <textarea className="w-full border rounded px-3 py-2 bg-transparent resize-none" rows={3} value={editNotes} onChange={(e) => setEditNotes(e.target.value)} />
+              <label className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider block mb-1.5">Notes</label>
+              <textarea
+                className="w-full border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2.5 bg-transparent text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 resize-none"
+                rows={3}
+                value={editNotes}
+                onChange={(e) => setEditNotes(e.target.value)}
+              />
             </div>
             {saveError && <p className="text-red-600 text-sm">{saveError}</p>}
             <div className="flex gap-2">
-              <button onClick={saveCustomer} disabled={saving} className="flex-1 bg-black text-white dark:bg-white dark:text-black py-2 rounded font-medium disabled:opacity-50">
+              <button
+                onClick={saveCustomer}
+                disabled={saving}
+                className="flex-1 px-5 py-2.5 brand-gradient text-white rounded-xl text-sm font-semibold hover:opacity-90 transition-opacity disabled:opacity-50"
+              >
                 {saving ? "Saving…" : "Save"}
               </button>
-              <button onClick={() => setEditing(false)} className="flex-1 border py-2 rounded font-medium">Cancel</button>
+              <button
+                onClick={() => setEditing(false)}
+                className="flex-1 px-5 py-2.5 border border-gray-200 dark:border-gray-700 rounded-xl text-sm font-semibold text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+              >
+                Cancel
+              </button>
             </div>
           </div>
         ) : (
           <div className="grid gap-3 text-sm">
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <div className="opacity-50 mb-0.5">Email</div>
-                <div>{customer.email || <span className="opacity-40">—</span>}</div>
+                <div className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Email</div>
+                <div className="text-gray-900 dark:text-white">{customer.email || <span className="text-gray-400 dark:text-gray-500">—</span>}</div>
               </div>
               <div>
-                <div className="opacity-50 mb-0.5">Phone</div>
-                <div>{customer.phone || <span className="opacity-40">—</span>}</div>
+                <div className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Phone</div>
+                <div className="text-gray-900 dark:text-white">{customer.phone || <span className="text-gray-400 dark:text-gray-500">—</span>}</div>
               </div>
             </div>
             <div>
-              <div className="opacity-50 mb-0.5">Address</div>
+              <div className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Address</div>
               {mapsAddress ? (
                 <a
                   href={`https://maps.google.com/?q=${encodeURIComponent(mapsAddress)}`}
@@ -404,51 +471,89 @@ export default function CustomerDetailPage() {
                     )}
                   </span>
                 </a>
-              ) : <span className="opacity-40">—</span>}
+              ) : <span className="text-gray-400 dark:text-gray-500">—</span>}
             </div>
             <div>
-              <div className="opacity-50 mb-0.5">Notes</div>
-              <div className="whitespace-pre-wrap">{customer.notes || <span className="opacity-40">—</span>}</div>
+              <div className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Notes</div>
+              <div className="whitespace-pre-wrap text-gray-900 dark:text-white">{customer.notes || <span className="text-gray-400 dark:text-gray-500">—</span>}</div>
             </div>
-            <div className="opacity-40 text-xs pt-1">Added {fmtDate(customer.created_at)}</div>
+            <div className="text-xs text-gray-400 dark:text-gray-500 pt-1">Added {fmtDate(customer.created_at)}</div>
           </div>
         )}
       </section>
 
       {/* Service Prices */}
-      <section className="border rounded-lg p-5 mb-4">
+      <section className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-2xl p-5 mb-4">
         <div className="flex items-center justify-between mb-3">
-          <h2 className="font-semibold">Service Prices</h2>
+          <h2 className="font-semibold text-gray-900 dark:text-white">Service Prices</h2>
           {!addingPrice && (
-            <button onClick={() => setAddingPrice(true)} className="text-sm border rounded px-2 py-1 hover:opacity-70">+ Add</button>
+            <button
+              onClick={() => setAddingPrice(true)}
+              className="px-5 py-2.5 border border-gray-200 dark:border-gray-700 rounded-xl text-sm font-semibold text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+            >
+              + Add
+            </button>
           )}
         </div>
 
         {servicePrices.length === 0 && !addingPrice && (
-          <p className="text-sm opacity-40">No service prices yet. Add named prices for this customer (e.g. Monthly Spray, Quarterly Treatment).</p>
+          <p className="text-sm text-gray-400 dark:text-gray-500">No service prices yet. Add named prices for this customer (e.g. Monthly Spray, Quarterly Treatment).</p>
         )}
 
         <div className="grid gap-2">
           {servicePrices.map((p) => (
-            <div key={p.id} className="flex items-center gap-2 text-sm">
+            <div
+              key={p.id}
+              className="flex items-center gap-2 text-sm px-4 py-3 bg-gray-50 dark:bg-gray-800/50 rounded-xl"
+            >
               {editingPriceId === p.id ? (
                 <>
-                  <input className="flex-1 border rounded px-2 py-1 bg-transparent text-sm" value={editPriceName} onChange={(e) => setEditPriceName(e.target.value)} />
-                  <span className="opacity-40 text-sm">$</span>
-                  <input className="w-24 border rounded px-2 py-1 bg-transparent text-sm" type="number" step="0.01" min="0" value={editPriceAmount} onChange={(e) => setEditPriceAmount(e.target.value)} />
-                  <button onClick={saveEditPrice} disabled={savingPrice} className="border rounded px-2 py-1 text-xs disabled:opacity-50 hover:opacity-70">Save</button>
-                  <button onClick={() => setEditingPriceId(null)} className="border rounded px-2 py-1 text-xs hover:opacity-70">✕</button>
+                  <input
+                    className="flex-1 border border-gray-200 dark:border-gray-700 rounded-xl px-3 py-1.5 bg-transparent text-sm focus:outline-none"
+                    value={editPriceName}
+                    onChange={(e) => setEditPriceName(e.target.value)}
+                  />
+                  <span className="text-gray-400 text-sm">$</span>
+                  <input
+                    className="w-24 border border-gray-200 dark:border-gray-700 rounded-xl px-3 py-1.5 bg-transparent text-sm focus:outline-none"
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    value={editPriceAmount}
+                    onChange={(e) => setEditPriceAmount(e.target.value)}
+                  />
+                  <button
+                    onClick={saveEditPrice}
+                    disabled={savingPrice}
+                    className="px-3 py-1.5 brand-gradient text-white rounded-xl text-xs font-semibold hover:opacity-90 transition-opacity disabled:opacity-50"
+                  >
+                    Save
+                  </button>
+                  <button
+                    onClick={() => setEditingPriceId(null)}
+                    className="px-3 py-1.5 border border-gray-200 dark:border-gray-700 rounded-xl text-xs text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                  >
+                    ✕
+                  </button>
                 </>
               ) : (
                 <>
-                  <span className="flex-1">{p.service_name}</span>
-                  <span className="font-medium tabular-nums">${p.price.toFixed(2)}</span>
+                  <span className="flex-1 font-medium text-gray-900 dark:text-white">{p.service_name}</span>
+                  <span className="font-semibold tabular-nums text-gray-900 dark:text-white">${p.price.toFixed(2)}</span>
                   <button
                     onClick={() => { setEditingPriceId(p.id); setEditPriceName(p.service_name); setEditPriceAmount(String(p.price)); }}
-                    className="opacity-30 hover:opacity-70"
+                    className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors"
                     title="Edit"
-                  >✏</button>
-                  <button onClick={() => deleteServicePrice(p.id)} className="opacity-30 hover:opacity-70 text-red-500" title="Delete">✕</button>
+                  >
+                    ✏
+                  </button>
+                  <button
+                    onClick={() => deleteServicePrice(p.id)}
+                    className="text-red-400 hover:text-red-600 transition-colors"
+                    title="Delete"
+                  >
+                    ✕
+                  </button>
                 </>
               )}
             </div>
@@ -458,16 +563,16 @@ export default function CustomerDetailPage() {
         {addingPrice && (
           <div className="mt-3 flex gap-2 flex-wrap">
             <input
-              className="flex-1 min-w-40 border rounded px-2 py-1.5 bg-transparent text-sm"
+              className="flex-1 min-w-40 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2.5 bg-transparent text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20"
               placeholder="Service name (e.g. Monthly Spray)"
               value={newPriceName}
               onChange={(e) => setNewPriceName(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && addServicePrice()}
             />
-            <div className="flex items-center border rounded overflow-hidden">
-              <span className="px-2 opacity-40 text-sm">$</span>
+            <div className="flex items-center border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden">
+              <span className="px-3 text-gray-400 text-sm">$</span>
               <input
-                className="w-24 py-1.5 pr-2 bg-transparent text-sm outline-none"
+                className="w-24 py-2.5 pr-3 bg-transparent text-sm outline-none"
                 type="number"
                 step="0.01"
                 min="0"
@@ -480,11 +585,14 @@ export default function CustomerDetailPage() {
             <button
               onClick={addServicePrice}
               disabled={savingPrice || !newPriceName.trim() || !newPriceAmount}
-              className="border rounded px-3 py-1.5 text-sm font-medium disabled:opacity-40 hover:opacity-70"
+              className="px-5 py-2.5 brand-gradient text-white rounded-xl text-sm font-semibold hover:opacity-90 transition-opacity disabled:opacity-40"
             >
               Add
             </button>
-            <button onClick={() => { setAddingPrice(false); setNewPriceName(""); setNewPriceAmount(""); }} className="border rounded px-3 py-1.5 text-sm hover:opacity-70">
+            <button
+              onClick={() => { setAddingPrice(false); setNewPriceName(""); setNewPriceAmount(""); }}
+              className="px-5 py-2.5 border border-gray-200 dark:border-gray-700 rounded-xl text-sm font-semibold text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+            >
               Cancel
             </button>
           </div>
@@ -492,25 +600,29 @@ export default function CustomerDetailPage() {
       </section>
 
       {/* Custom Fields */}
-      <section className="border rounded-lg p-5 mb-4">
+      <section className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-2xl p-5 mb-4">
         <div className="flex items-center justify-between mb-3">
           <div>
-            <h2 className="font-semibold">Custom Fields</h2>
-            {managingFields && <p className="text-xs opacity-40 mt-0.5">These fields appear on all customer records</p>}
+            <h2 className="font-semibold text-gray-900 dark:text-white">Custom Fields</h2>
+            {managingFields && <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">These fields appear on all customer records</p>}
           </div>
           <button
             onClick={() => { setManagingFields((v) => !v); setAddingCustomField(false); }}
-            className={`text-sm border rounded px-2 py-1 hover:opacity-70 transition-colors ${managingFields ? "bg-black text-white dark:bg-white dark:text-black border-transparent" : ""}`}
+            className={`px-5 py-2.5 rounded-xl text-sm font-semibold transition-colors ${
+              managingFields
+                ? "brand-gradient text-white hover:opacity-90"
+                : "border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
+            }`}
           >
-            {managingFields ? "Done" : "✏ Manage"}
+            {managingFields ? "Done" : "Manage"}
           </button>
         </div>
 
         {managingFields && (
-          <div className="mb-5 pb-5 border-b">
+          <div className="mb-5 pb-5 border-b border-gray-100 dark:border-gray-800">
             {FIELD_CATEGORIES.map((cat) => (
               <div key={cat} className="mb-4">
-                <p className="text-xs font-semibold opacity-40 uppercase tracking-wider mb-2">{cat}</p>
+                <p className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-2">{cat}</p>
                 <div className="flex flex-wrap gap-2">
                   {PREBUILT_FIELDS.filter((f) => f.category === cat).map((pf) => {
                     const isActive = fields.some((f) => f.label === pf.label);
@@ -518,10 +630,10 @@ export default function CustomerDetailPage() {
                       <button
                         key={pf.label}
                         onClick={() => togglePrebuiltField(pf, isActive)}
-                        className={`text-xs rounded-full px-3 py-1.5 border transition-colors ${
+                        className={`text-xs rounded-full px-3 py-1.5 border transition-colors font-medium ${
                           isActive
-                            ? "bg-black text-white dark:bg-white dark:text-black border-transparent"
-                            : "hover:opacity-70"
+                            ? "bg-gray-900 text-white dark:bg-white dark:text-gray-900 border-transparent"
+                            : "border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 hover:border-gray-400 dark:hover:border-gray-500"
                         }`}
                       >
                         {isActive ? "✓ " : ""}{pf.label}
@@ -535,66 +647,113 @@ export default function CustomerDetailPage() {
             {addingCustomField ? (
               <div className="flex gap-2 mt-2 flex-wrap">
                 <input
-                  className="flex-1 min-w-32 border rounded px-2 py-1.5 bg-transparent text-sm"
+                  className="flex-1 min-w-32 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2 bg-transparent text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20"
                   placeholder="Field name"
                   value={newFieldLabel}
                   onChange={(e) => setNewFieldLabel(e.target.value)}
                 />
-                <select className="border rounded px-2 py-1.5 bg-transparent text-sm" value={newFieldType} onChange={(e) => setNewFieldType(e.target.value)}>
+                <select
+                  className="border border-gray-200 dark:border-gray-700 rounded-xl px-3 py-2 bg-white dark:bg-gray-900 text-sm focus:outline-none"
+                  value={newFieldType}
+                  onChange={(e) => setNewFieldType(e.target.value)}
+                >
                   <option value="text">Text</option>
                   <option value="number">Number</option>
                   <option value="date">Date</option>
                   <option value="boolean">Yes/No</option>
                 </select>
-                <button onClick={addCustomField} disabled={savingNewField || !newFieldLabel.trim()} className="border rounded px-2 py-1.5 text-sm disabled:opacity-50 hover:opacity-70">Add</button>
-                <button onClick={() => setAddingCustomField(false)} className="border rounded px-2 py-1.5 text-sm hover:opacity-70">✕</button>
+                <button
+                  onClick={addCustomField}
+                  disabled={savingNewField || !newFieldLabel.trim()}
+                  className="px-4 py-2 brand-gradient text-white rounded-xl text-sm font-semibold hover:opacity-90 transition-opacity disabled:opacity-50"
+                >
+                  Add
+                </button>
+                <button
+                  onClick={() => setAddingCustomField(false)}
+                  className="px-4 py-2 border border-gray-200 dark:border-gray-700 rounded-xl text-sm text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                >
+                  ✕
+                </button>
               </div>
             ) : (
-              <button onClick={() => setAddingCustomField(true)} className="mt-2 text-xs border rounded px-3 py-1.5 hover:opacity-70">+ Custom Field</button>
+              <button
+                onClick={() => setAddingCustomField(true)}
+                className="mt-2 text-xs border border-gray-200 dark:border-gray-700 rounded-xl px-3 py-1.5 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+              >
+                + Custom Field
+              </button>
             )}
           </div>
         )}
 
         {fields.length === 0 && !managingFields && (
-          <p className="text-sm opacity-40">No custom fields yet. Click ✏ Manage to add fields for your business.</p>
+          <p className="text-sm text-gray-400 dark:text-gray-500">No custom fields yet. Click Manage to add fields for your business.</p>
         )}
 
         <div className="grid gap-3">
           {fields.map((f) => (
             <div key={f.id}>
-              <div className="flex items-center gap-2 mb-0.5">
-                <span className="text-xs opacity-50">{f.label} <span className="italic">({fieldTypeLabel(f.field_type)})</span></span>
+              <div className="flex items-center gap-2 mb-1">
+                <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  {f.label} <span className="normal-case font-normal italic">({fieldTypeLabel(f.field_type)})</span>
+                </span>
                 {managingFields && (
-                  <button onClick={() => deleteField(f.id)} className="text-xs text-red-500 opacity-50 hover:opacity-100">Remove</button>
+                  <button
+                    onClick={() => deleteField(f.id)}
+                    className="text-xs text-red-500 hover:text-red-700 transition-colors"
+                  >
+                    Remove
+                  </button>
                 )}
               </div>
               {editingFieldId === f.id ? (
                 <div className="flex gap-2">
                   {f.field_type === "boolean" ? (
-                    <select className="flex-1 border rounded px-2 py-1 bg-transparent text-sm" value={editingFieldValue} onChange={(e) => setEditingFieldValue(e.target.value)}>
+                    <select
+                      className="flex-1 border border-gray-200 dark:border-gray-700 rounded-xl px-3 py-1.5 bg-white dark:bg-gray-900 text-sm focus:outline-none"
+                      value={editingFieldValue}
+                      onChange={(e) => setEditingFieldValue(e.target.value)}
+                    >
                       <option value="">—</option>
                       <option value="true">Yes</option>
                       <option value="false">No</option>
                     </select>
                   ) : (
                     <input
-                      className="flex-1 border rounded px-2 py-1 bg-transparent text-sm"
+                      className="flex-1 border border-gray-200 dark:border-gray-700 rounded-xl px-3 py-1.5 bg-transparent text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20"
                       type={f.field_type === "number" ? "number" : f.field_type === "date" ? "date" : "text"}
                       value={editingFieldValue}
                       onChange={(e) => setEditingFieldValue(e.target.value)}
                     />
                   )}
-                  <button onClick={() => saveFieldValue(f.id)} disabled={savingField} className="border rounded px-2 py-1 text-xs font-medium disabled:opacity-50">{savingField ? "…" : "Save"}</button>
-                  <button onClick={() => setEditingFieldId(null)} className="border rounded px-2 py-1 text-xs">✕</button>
+                  <button
+                    onClick={() => saveFieldValue(f.id)}
+                    disabled={savingField}
+                    className="px-4 py-1.5 brand-gradient text-white rounded-xl text-xs font-semibold hover:opacity-90 transition-opacity disabled:opacity-50"
+                  >
+                    {savingField ? "…" : "Save"}
+                  </button>
+                  <button
+                    onClick={() => setEditingFieldId(null)}
+                    className="px-3 py-1.5 border border-gray-200 dark:border-gray-700 rounded-xl text-xs text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                  >
+                    ✕
+                  </button>
                 </div>
               ) : (
                 <div className="flex items-center gap-2">
-                  <span className="text-sm">
+                  <span className="text-sm text-gray-900 dark:text-white">
                     {fieldValues[f.id]
                       ? f.field_type === "boolean" ? (fieldValues[f.id] === "true" ? "Yes" : "No") : fieldValues[f.id]
-                      : <span className="opacity-40">—</span>}
+                      : <span className="text-gray-400 dark:text-gray-500">—</span>}
                   </span>
-                  <button onClick={() => { setEditingFieldId(f.id); setEditingFieldValue(fieldValues[f.id] ?? ""); }} className="text-xs opacity-40 hover:opacity-80">Edit</button>
+                  <button
+                    onClick={() => { setEditingFieldId(f.id); setEditingFieldValue(fieldValues[f.id] ?? ""); }}
+                    className="text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors"
+                  >
+                    Edit
+                  </button>
                 </div>
               )}
             </div>
@@ -603,19 +762,19 @@ export default function CustomerDetailPage() {
       </section>
 
       {hasInvoicing && (
-        <section className="border rounded-lg p-5">
+        <section className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-2xl p-5">
           <div className="flex items-center justify-between mb-3">
-            <h2 className="font-semibold">Invoices</h2>
+            <h2 className="font-semibold text-gray-900 dark:text-white">Invoices</h2>
             <Link
-              href={`/invoices/new`}
-              className="text-sm text-blue-500 hover:text-blue-600 font-medium"
+              href="/invoices/new"
+              className="px-5 py-2.5 brand-gradient text-white rounded-xl text-sm font-semibold hover:opacity-90 transition-opacity"
             >
               + New Invoice
             </Link>
           </div>
 
           {invoices.length === 0 ? (
-            <p className="text-sm opacity-40">No invoices yet for this customer.</p>
+            <p className="text-sm text-gray-400 dark:text-gray-500">No invoices yet for this customer.</p>
           ) : (
             <div className="space-y-1.5">
               {invoices.map((inv) => {
@@ -627,7 +786,7 @@ export default function CustomerDetailPage() {
                   <Link
                     key={inv.id}
                     href={`/invoices/${inv.id}`}
-                    className="flex items-center gap-3 px-3 py-2.5 rounded-xl border border-gray-100 dark:border-gray-800 hover:border-gray-300 dark:hover:border-gray-600 hover:shadow-sm transition-all text-sm"
+                    className="flex items-center gap-3 px-4 py-3.5 bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-2xl hover:border-gray-300 dark:hover:border-gray-600 hover:shadow-sm transition-all text-sm"
                   >
                     <span className="font-mono text-xs text-gray-500 dark:text-gray-400 w-20 shrink-0">
                       {inv.invoice_number}

@@ -62,14 +62,28 @@ export default function MileagePage() {
 
   const currentYear = new Date().getFullYear();
 
-  if (loading) return <main className="p-6 max-w-4xl mx-auto"><p className="opacity-50">Loading…</p></main>;
+  if (loading) {
+    return (
+      <main className="p-6 max-w-4xl mx-auto space-y-4">
+        <div className="animate-pulse">
+          <div className="h-8 bg-gray-200 dark:bg-gray-800 rounded-2xl w-40 mb-2" />
+          <div className="h-4 bg-gray-200 dark:bg-gray-800 rounded-2xl w-28" />
+        </div>
+        <div className="grid grid-cols-3 gap-3">
+          {[0, 1, 2].map((i) => (
+            <div key={i} className="animate-pulse bg-gray-200 dark:bg-gray-800 rounded-2xl h-20" />
+          ))}
+        </div>
+      </main>
+    );
+  }
 
   if (gated) {
     return (
       <main className="p-6 max-w-4xl mx-auto">
-        <h1 className="text-2xl font-semibold mb-2">Mileage Tracking</h1>
-        <p className="opacity-60 mb-6 text-sm">This module isn&apos;t active on your plan.</p>
-        <Link href="/plan" className="inline-block bg-black text-white dark:bg-white dark:text-black px-4 py-2 rounded font-medium text-sm hover:opacity-80">
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Mileage Tracking</h1>
+        <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">This module isn&apos;t active on your plan.</p>
+        <Link href="/plan" className="inline-block px-5 py-2.5 brand-gradient text-white rounded-xl text-sm font-semibold hover:opacity-90 transition-opacity">
           Add Mileage Tracking — $6 / mo
         </Link>
       </main>
@@ -80,16 +94,27 @@ export default function MileagePage() {
     <main className="p-6 max-w-4xl mx-auto">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-semibold">Mileage</h1>
-          <p className="text-sm opacity-50 mt-0.5">{year} business trips</p>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Mileage</h1>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">{year} business trips</p>
         </div>
         <div className="flex items-center gap-2">
-          <div className="flex items-center gap-1 border rounded overflow-hidden text-sm">
-            <button onClick={() => setYear((y) => y - 1)} className="px-2 py-1.5 hover:opacity-70">←</button>
-            <span className="px-2 font-medium tabular-nums">{year}</span>
-            <button onClick={() => setYear((y) => y + 1)} disabled={year >= currentYear} className="px-2 py-1.5 hover:opacity-70 disabled:opacity-30">→</button>
+          <div className="flex items-center bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden text-sm">
+            <button
+              onClick={() => setYear((y) => y - 1)}
+              className="px-3 py-2 text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+            >
+              ←
+            </button>
+            <span className="px-3 font-semibold tabular-nums text-gray-900 dark:text-white">{year}</span>
+            <button
+              onClick={() => setYear((y) => y + 1)}
+              disabled={year >= currentYear}
+              className="px-3 py-2 text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors disabled:opacity-30"
+            >
+              →
+            </button>
           </div>
-          <Link href="/mileage/new" className="border rounded px-3 py-1.5 text-sm font-medium hover:opacity-70">
+          <Link href="/mileage/new" className="px-5 py-2.5 brand-gradient text-white rounded-xl text-sm font-semibold hover:opacity-90 transition-opacity">
             Log Trip
           </Link>
         </div>
@@ -97,54 +122,71 @@ export default function MileagePage() {
 
       {/* Summary cards */}
       <div className="grid grid-cols-3 gap-3 mb-6">
-        <div className="border rounded-xl p-4">
-          <p className="text-xs opacity-50 mb-1">Total Miles</p>
-          <p className="font-semibold text-xl tabular-nums">{totalMiles.toLocaleString("en-US", { maximumFractionDigits: 1 })}</p>
+        <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-2xl p-4">
+          <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">Total Miles</p>
+          <p className="font-bold text-2xl text-gray-900 dark:text-white tabular-nums">
+            {totalMiles.toLocaleString("en-US", { maximumFractionDigits: 1 })}
+          </p>
         </div>
-        <div className="border rounded-xl p-4">
-          <p className="text-xs opacity-50 mb-1">IRS Rate</p>
-          <p className="font-semibold text-xl">{(IRS_RATE * 100).toFixed(1)}¢ / mi</p>
+        <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-2xl p-4">
+          <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">IRS Rate</p>
+          <p className="font-bold text-2xl text-gray-900 dark:text-white">{(IRS_RATE * 100).toFixed(1)}¢ / mi</p>
         </div>
-        <div className="border rounded-xl p-4">
-          <p className="text-xs opacity-50 mb-1">Est. Deduction</p>
-          <p className="font-semibold text-xl text-green-600 dark:text-green-400 tabular-nums">{fmtMoney(totalDeduction)}</p>
+        <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-2xl p-4">
+          <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">Est. Deduction</p>
+          <p className="font-bold text-2xl text-green-600 dark:text-green-400 tabular-nums">{fmtMoney(totalDeduction)}</p>
         </div>
       </div>
 
       {error && <p className="text-red-600 mb-4 text-sm">{error}</p>}
 
       {logs.length === 0 ? (
-        <p className="opacity-50 text-sm">No trips logged for {year}. <Link href="/mileage/new" className="underline">Log your first trip.</Link></p>
+        <div className="text-center py-20 border border-dashed border-gray-200 dark:border-gray-800 rounded-2xl">
+          <p className="text-sm text-gray-500 dark:text-gray-400">No trips logged for {year}.</p>
+          <Link href="/mileage/new" className="inline-block mt-3 px-5 py-2.5 brand-gradient text-white rounded-xl text-sm font-semibold hover:opacity-90 transition-opacity">
+            Log Your First Trip
+          </Link>
+        </div>
       ) : (
-        <div className="border rounded-xl overflow-hidden">
-          {logs.map((log, i) => (
-            <div key={log.id} className={`p-4 flex items-center justify-between gap-4 ${i > 0 ? "border-t" : ""}`}>
-              <div className="flex items-center gap-4 min-w-0">
-                <span className="text-sm opacity-40 tabular-nums shrink-0 w-12">{fmtDate(log.trip_date)}</span>
-                <div className="min-w-0">
-                  <p className="font-medium text-sm">{log.purpose}</p>
-                  {(log.from_location || log.to_location) && (
-                    <p className="text-xs opacity-40 mt-0.5">
-                      {[log.from_location, log.to_location].filter(Boolean).join(" → ")}
-                    </p>
-                  )}
-                </div>
+        <div className="space-y-2">
+          {logs.map((log) => (
+            <div
+              key={log.id}
+              className="flex items-center gap-4 px-4 py-3.5 bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-2xl"
+            >
+              <span className="text-sm text-gray-400 dark:text-gray-500 tabular-nums shrink-0 w-12">
+                {fmtDate(log.trip_date)}
+              </span>
+              <div className="flex-1 min-w-0">
+                <p className="font-semibold text-sm text-gray-900 dark:text-white truncate">{log.purpose}</p>
+                {(log.from_location || log.to_location) && (
+                  <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
+                    {[log.from_location, log.to_location].filter(Boolean).join(" → ")}
+                  </p>
+                )}
               </div>
-              <div className="flex items-center gap-4 shrink-0">
-                <div className="text-right">
-                  <p className="font-medium text-sm tabular-nums">{Number(log.miles).toLocaleString("en-US", { maximumFractionDigits: 1 })} mi</p>
-                  <p className="text-xs opacity-40 tabular-nums">{fmtMoney(Number(log.miles) * IRS_RATE)}</p>
-                </div>
-                <button onClick={() => remove(log.id)} className="text-sm opacity-30 hover:opacity-70 hover:text-red-500">
-                  ×
-                </button>
+              <div className="text-right shrink-0">
+                <p className="font-semibold text-sm text-gray-900 dark:text-white tabular-nums">
+                  {Number(log.miles).toLocaleString("en-US", { maximumFractionDigits: 1 })} mi
+                </p>
+                <p className="text-xs text-gray-400 dark:text-gray-500 tabular-nums">
+                  {fmtMoney(Number(log.miles) * IRS_RATE)}
+                </p>
               </div>
+              <button
+                onClick={() => remove(log.id)}
+                className="text-gray-300 dark:text-gray-600 hover:text-red-500 dark:hover:text-red-400 transition-colors text-lg leading-none shrink-0"
+              >
+                ×
+              </button>
             </div>
           ))}
         </div>
       )}
 
-      <p className="text-xs opacity-30 mt-4">IRS standard mileage rate of {(IRS_RATE * 100).toFixed(1)}¢/mile for {year}. Consult a tax professional for your actual deduction.</p>
+      <p className="text-xs text-gray-400 dark:text-gray-600 mt-6">
+        IRS standard mileage rate of {(IRS_RATE * 100).toFixed(1)}¢/mile for {year}. Consult a tax professional for your actual deduction.
+      </p>
     </main>
   );
 }

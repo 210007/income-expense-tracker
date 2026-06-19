@@ -154,16 +154,16 @@ export default function SettingsPage() {
   return (
     <main className="p-6 max-w-4xl mx-auto">
       <div className="mb-6">
-        <h1 className="text-2xl font-semibold">Settings</h1>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Settings</h1>
       </div>
 
       {/* Account */}
-      <div className="border rounded-lg p-5 mb-4">
-        <div className="font-semibold mb-3">Account</div>
-        <div className="text-sm opacity-60 mb-1">Signed in as</div>
-        <div className="font-medium mb-4">{email ?? "—"}</div>
+      <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-2xl p-5 mb-4">
+        <div className="font-semibold text-gray-900 dark:text-white mb-3">Account</div>
+        <div className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Signed in as</div>
+        <div className="font-medium text-gray-900 dark:text-white mb-4">{email ?? "—"}</div>
         <button
-          className="border rounded py-2 px-4 text-sm font-medium"
+          className="px-5 py-2.5 border border-gray-200 dark:border-gray-700 rounded-xl text-sm font-semibold text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
           onClick={async () => {
             await supabase.auth.signOut();
             window.location.href = "/login";
@@ -174,9 +174,9 @@ export default function SettingsPage() {
       </div>
 
       {/* Categories */}
-      <div className="border rounded-lg p-5 mb-4">
-        <div className="font-semibold mb-1">Categories</div>
-        <p className="text-sm opacity-50 mb-4">
+      <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-2xl p-5 mb-4">
+        <div className="font-semibold text-gray-900 dark:text-white mb-1">Categories</div>
+        <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
           Customize the categories used for your transactions.
         </p>
 
@@ -185,20 +185,20 @@ export default function SettingsPage() {
             value={newName}
             onChange={(e) => setNewName(e.target.value)}
             placeholder="New category name"
-            className="flex-1 border rounded px-3 py-2 bg-transparent"
+            className="flex-1 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2.5 bg-transparent text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20"
             onKeyDown={(e) => e.key === "Enter" && addCategory()}
           />
           <select
             value={newType}
             onChange={(e) => setNewType(e.target.value as "expense" | "income" | "both")}
-            className="border rounded px-3 py-2 bg-transparent"
+            className="border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2.5 bg-white dark:bg-gray-900 text-sm focus:outline-none"
           >
             <option value="expense">Expense</option>
             <option value="income">Income</option>
             <option value="both">Both</option>
           </select>
           <button
-            className="border rounded px-4 py-2 font-medium disabled:opacity-50"
+            className="px-5 py-2.5 brand-gradient text-white rounded-xl text-sm font-semibold hover:opacity-90 transition-opacity disabled:opacity-50"
             disabled={saving || !normalizedName}
             onClick={addCategory}
           >
@@ -209,22 +209,26 @@ export default function SettingsPage() {
         {catError && <p className="text-red-600 text-sm mb-3">{catError}</p>}
 
         {loadingCats ? (
-          <p className="opacity-50 text-sm">Loading…</p>
+          <div className="grid gap-2 mt-3">
+            {[...Array(3)].map((_, i) => (
+              <div key={i} className="animate-pulse bg-gray-200 dark:bg-gray-800 rounded-2xl h-11" />
+            ))}
+          </div>
         ) : categories.length === 0 ? (
-          <p className="opacity-50 text-sm">No categories yet.</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400">No categories yet.</p>
         ) : (
           <div className="grid gap-2 mt-3">
             {categories.map((c) => (
               <div
                 key={c.id}
-                className="border rounded-lg px-3 py-2 flex items-center justify-between"
+                className="flex items-center gap-4 px-4 py-3.5 bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-2xl justify-between"
               >
                 <div>
-                  <span className="font-medium">{c.name}</span>
-                  <span className="text-xs opacity-50 ml-2">{typeLabel(c.type)}</span>
+                  <span className="font-medium text-gray-900 dark:text-white">{c.name}</span>
+                  <span className="text-xs text-gray-500 dark:text-gray-400 ml-2">{typeLabel(c.type)}</span>
                 </div>
                 <button
-                  className="text-xs opacity-50 hover:opacity-100 hover:text-red-600"
+                  className="px-5 py-2.5 border border-red-200 dark:border-red-800 rounded-xl text-sm font-semibold text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors"
                   onClick={() => deleteCategory(c.id)}
                 >
                   Delete
@@ -236,9 +240,9 @@ export default function SettingsPage() {
       </div>
 
       {/* Customer Custom Fields */}
-      <div className="border rounded-lg p-5 mb-4">
-        <div className="font-semibold mb-1">Customer Custom Fields</div>
-        <p className="text-sm opacity-50 mb-4">
+      <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-2xl p-5 mb-4">
+        <div className="font-semibold text-gray-900 dark:text-white mb-1">Customer Custom Fields</div>
+        <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
           Add extra fields that appear on every customer record.
         </p>
 
@@ -247,13 +251,13 @@ export default function SettingsPage() {
             value={newFieldLabel}
             onChange={(e) => setNewFieldLabel(e.target.value)}
             placeholder="Field label (e.g. Birthday)"
-            className="flex-1 border rounded px-3 py-2 bg-transparent"
+            className="flex-1 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2.5 bg-transparent text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20"
             onKeyDown={(e) => e.key === "Enter" && addCustomerField()}
           />
           <select
             value={newFieldType}
             onChange={(e) => setNewFieldType(e.target.value as "text" | "number" | "date" | "boolean")}
-            className="border rounded px-3 py-2 bg-transparent"
+            className="border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2.5 bg-white dark:bg-gray-900 text-sm focus:outline-none"
           >
             <option value="text">Text</option>
             <option value="number">Number</option>
@@ -261,7 +265,7 @@ export default function SettingsPage() {
             <option value="boolean">Yes/No</option>
           </select>
           <button
-            className="border rounded px-4 py-2 font-medium disabled:opacity-50"
+            className="px-5 py-2.5 brand-gradient text-white rounded-xl text-sm font-semibold hover:opacity-90 transition-opacity disabled:opacity-50"
             disabled={savingField || !newFieldLabel.trim()}
             onClick={addCustomerField}
           >
@@ -272,22 +276,26 @@ export default function SettingsPage() {
         {fieldError && <p className="text-red-600 text-sm mb-3">{fieldError}</p>}
 
         {loadingFields ? (
-          <p className="opacity-50 text-sm">Loading…</p>
+          <div className="grid gap-2 mt-3">
+            {[...Array(2)].map((_, i) => (
+              <div key={i} className="animate-pulse bg-gray-200 dark:bg-gray-800 rounded-2xl h-11" />
+            ))}
+          </div>
         ) : customerFields.length === 0 ? (
-          <p className="opacity-50 text-sm">No custom fields yet.</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400">No custom fields yet.</p>
         ) : (
           <div className="grid gap-2 mt-3">
             {customerFields.map((f) => (
               <div
                 key={f.id}
-                className="border rounded-lg px-3 py-2 flex items-center justify-between"
+                className="flex items-center gap-4 px-4 py-3.5 bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-2xl justify-between"
               >
                 <div>
-                  <span className="font-medium">{f.label}</span>
-                  <span className="text-xs opacity-50 ml-2">{fieldTypeLabel(f.field_type)}</span>
+                  <span className="font-medium text-gray-900 dark:text-white">{f.label}</span>
+                  <span className="text-xs text-gray-500 dark:text-gray-400 ml-2">{fieldTypeLabel(f.field_type)}</span>
                 </div>
                 <button
-                  className="text-xs opacity-50 hover:opacity-100 hover:text-red-600"
+                  className="px-5 py-2.5 border border-red-200 dark:border-red-800 rounded-xl text-sm font-semibold text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors"
                   onClick={() => deleteCustomerField(f.id)}
                 >
                   Delete
@@ -299,9 +307,9 @@ export default function SettingsPage() {
       </div>
 
       {/* Bank */}
-      <div className="border rounded-lg p-5">
-        <div className="font-semibold mb-1">Bank Connection</div>
-        <p className="text-sm opacity-50 mb-2">
+      <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-2xl p-5">
+        <div className="font-semibold text-gray-900 dark:text-white mb-1">Bank Connection</div>
+        <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
           Connect a bank account to import transactions automatically.
         </p>
         <ConnectBankButton />

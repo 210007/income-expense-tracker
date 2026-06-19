@@ -120,51 +120,52 @@ export default function ExportPage() {
   return (
     <main className="p-6 max-w-4xl mx-auto">
       <div className="mb-6">
-        <h1 className="text-2xl font-semibold">Export</h1>
-        <p className="text-sm opacity-50 mt-0.5">
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Export</h1>
+        <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
           Download transactions as CSV for your accountant or tax software.
         </p>
       </div>
 
-      <section className="border rounded-lg p-5">
-        <h2 className="font-semibold mb-4">Date Range</h2>
-
-        <div className="grid grid-cols-2 gap-4 mb-4">
-          <div>
-            <label className="text-sm opacity-60 block mb-1">Start</label>
-            <input
-              className="w-full border rounded px-3 py-2 bg-transparent"
-              type="date"
-              value={startDate}
-              onChange={(e) => setStartDate(e.target.value)}
-            />
-          </div>
-          <div>
-            <label className="text-sm opacity-60 block mb-1">End</label>
-            <input
-              className="w-full border rounded px-3 py-2 bg-transparent"
-              type="date"
-              value={endDate}
-              onChange={(e) => setEndDate(e.target.value)}
-            />
+      <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-2xl p-5 space-y-4 max-w-lg">
+        <div>
+          <h2 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3">Date Range</h2>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider block mb-1.5">Start</label>
+              <input
+                className="w-full border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2.5 bg-transparent text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                type="date"
+                value={startDate}
+                onChange={(e) => setStartDate(e.target.value)}
+              />
+            </div>
+            <div>
+              <label className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider block mb-1.5">End</label>
+              <input
+                className="w-full border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2.5 bg-transparent text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                type="date"
+                value={endDate}
+                onChange={(e) => setEndDate(e.target.value)}
+              />
+            </div>
           </div>
         </div>
 
-        {error && <p className="text-red-600 text-sm mb-3">{error}</p>}
-        {status && <p className="opacity-60 text-sm mb-3">{status}</p>}
+        {error && <p className="text-red-600 text-sm">{error}</p>}
+        {status && <p className="text-sm text-gray-500 dark:text-gray-400">{status}</p>}
 
         <button
-          className="w-full bg-black text-white py-3 rounded font-medium disabled:opacity-50"
+          className="w-full px-5 py-2.5 brand-gradient text-white rounded-xl text-sm font-semibold hover:opacity-90 transition-opacity disabled:opacity-50"
           onClick={downloadCSV}
           disabled={loading}
         >
           {loading ? "Preparing…" : "Download CSV"}
         </button>
 
-        <p className="text-xs opacity-40 mt-3">
+        <p className="text-xs text-gray-400 dark:text-gray-500">
           Includes date, type, amount, vendor, description, category, receipt status, and transaction ID.
         </p>
-      </section>
+      </div>
     </main>
   );
 }

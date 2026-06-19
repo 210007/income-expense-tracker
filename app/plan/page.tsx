@@ -113,20 +113,24 @@ function PlanPageInner() {
     <main className="p-6 max-w-4xl mx-auto pb-32">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-semibold">My Plan</h1>
-          <p className="text-sm opacity-50 mt-0.5">Add or remove modules anytime.</p>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">My Plan</h1>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">Add or remove modules anytime.</p>
         </div>
         <div className="flex gap-2">
           {inactiveModules.length > 0 && !loading && (
             <button
               onClick={cart.size === inactiveModules.length ? clearCart : selectAll}
-              className="border rounded px-3 py-1.5 text-sm font-medium hover:opacity-70"
+              className="px-5 py-2.5 border border-gray-200 dark:border-gray-700 rounded-xl text-sm font-semibold text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
             >
               {cart.size === inactiveModules.length ? "Deselect All" : "Select All"}
             </button>
           )}
           {hasBilling && (
-            <button onClick={openPortal} disabled={portalLoading} className="border rounded px-3 py-1.5 text-sm font-medium hover:opacity-70 disabled:opacity-40">
+            <button
+              onClick={openPortal}
+              disabled={portalLoading}
+              className="px-5 py-2.5 border border-gray-200 dark:border-gray-700 rounded-xl text-sm font-semibold text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors disabled:opacity-40"
+            >
               {portalLoading ? "Opening…" : "Manage Billing"}
             </button>
           )}
@@ -134,7 +138,7 @@ function PlanPageInner() {
       </div>
 
       {successModule && (
-        <div className="border border-green-500 text-green-600 dark:text-green-400 rounded-lg px-4 py-3 mb-6 text-sm">
+        <div className="bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-800 text-green-700 dark:text-green-400 rounded-2xl px-4 py-3 mb-6 text-sm font-medium">
           {MODULES.find((m) => m.id === successModule)?.name ?? successModule} activated successfully.
         </div>
       )}
@@ -142,7 +146,11 @@ function PlanPageInner() {
       {error && <p className="text-red-600 mb-4 text-sm">{error}</p>}
 
       {loading ? (
-        <p className="opacity-50">Loading…</p>
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {[...Array(6)].map((_, i) => (
+            <div key={i} className="animate-pulse bg-gray-200 dark:bg-gray-800 rounded-2xl h-52" />
+          ))}
+        </div>
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {MODULES.map((mod) => {
@@ -154,43 +162,64 @@ function PlanPageInner() {
             return (
               <div
                 key={mod.id}
-                className={`border rounded-xl p-5 flex flex-col gap-3 transition-all ${
-                  isActive ? "border-black dark:border-white" :
-                  inCart ? "border-blue-500 dark:border-blue-400 bg-blue-50/30 dark:bg-blue-950/20" : ""
+                className={`bg-white dark:bg-gray-900 border rounded-2xl p-5 flex flex-col gap-3 transition-all ${
+                  isActive
+                    ? "border-gray-900 dark:border-white"
+                    : inCart
+                    ? "border-blue-500 dark:border-blue-400 bg-blue-50/30 dark:bg-blue-950/20"
+                    : "border-gray-200 dark:border-gray-700"
                 }`}
               >
                 <div className="flex items-start justify-between gap-2">
-                  <h2 className="font-semibold text-lg leading-tight">{mod.name}</h2>
-                  {isActive && <span className="text-xs border border-black dark:border-white rounded-full px-2 py-0.5 whitespace-nowrap shrink-0">Active</span>}
-                  {isPastDue && <span className="text-xs border border-yellow-500 text-yellow-600 rounded-full px-2 py-0.5 whitespace-nowrap shrink-0">Past Due</span>}
-                  {inCart && !isActive && <span className="text-xs border border-blue-500 text-blue-600 dark:text-blue-400 rounded-full px-2 py-0.5 whitespace-nowrap shrink-0">In Cart</span>}
+                  <h2 className="font-semibold text-gray-900 dark:text-white text-lg leading-tight">{mod.name}</h2>
+                  {isActive && (
+                    <span className="text-xs font-semibold px-2 py-0.5 rounded-full capitalize bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300 whitespace-nowrap shrink-0">
+                      Active
+                    </span>
+                  )}
+                  {isPastDue && (
+                    <span className="text-xs font-semibold px-2 py-0.5 rounded-full capitalize bg-yellow-50 text-yellow-600 dark:bg-yellow-950/30 dark:text-yellow-400 whitespace-nowrap shrink-0">
+                      Past Due
+                    </span>
+                  )}
+                  {inCart && !isActive && (
+                    <span className="text-xs font-semibold px-2 py-0.5 rounded-full capitalize bg-blue-50 text-blue-600 dark:bg-blue-950/30 dark:text-blue-400 whitespace-nowrap shrink-0">
+                      In Cart
+                    </span>
+                  )}
                 </div>
 
-                <p className="text-sm opacity-60 leading-relaxed">{mod.description}</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed">{mod.description}</p>
 
-                <ul className="text-sm opacity-70 space-y-1">
+                <ul className="text-sm text-gray-500 dark:text-gray-400 space-y-1">
                   {mod.features.map((f) => (
-                    <li key={f} className="flex gap-2"><span className="opacity-40">—</span>{f}</li>
+                    <li key={f} className="flex gap-2">
+                      <span className="text-gray-300 dark:text-gray-600">—</span>{f}
+                    </li>
                   ))}
                 </ul>
 
                 <div className="mt-auto pt-3 flex items-center justify-between">
-                  <span className="font-medium">{mod.price}</span>
+                  <span className="font-semibold text-gray-900 dark:text-white">{mod.price}</span>
                   {isActive ? (
-                    <button onClick={openPortal} disabled={portalLoading} className="border text-sm rounded px-3 py-1.5 font-medium disabled:opacity-40 hover:opacity-70">Manage</button>
+                    <button
+                      onClick={openPortal}
+                      disabled={portalLoading}
+                      className="px-5 py-2.5 border border-gray-200 dark:border-gray-700 rounded-xl text-sm font-semibold text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors disabled:opacity-40"
+                    >
+                      Manage
+                    </button>
                   ) : (
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => toggleCart(mod.id)}
-                        className={`text-sm rounded px-3 py-1.5 font-medium border transition-colors ${
-                          inCart
-                            ? "bg-blue-600 text-white border-blue-600 hover:bg-blue-700"
-                            : "hover:opacity-70"
-                        }`}
-                      >
-                        {inCart ? "Remove" : "Add to Cart"}
-                      </button>
-                    </div>
+                    <button
+                      onClick={() => toggleCart(mod.id)}
+                      className={`px-5 py-2.5 rounded-xl text-sm font-semibold transition-colors ${
+                        inCart
+                          ? "bg-blue-600 text-white hover:bg-blue-700"
+                          : "border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
+                      }`}
+                    >
+                      {inCart ? "Remove" : "Add to Cart"}
+                    </button>
                   )}
                 </div>
               </div>
@@ -201,23 +230,28 @@ function PlanPageInner() {
 
       {/* Cart footer */}
       {cart.size > 0 && (
-        <div className="fixed bottom-0 left-0 right-0 border-t bg-white dark:bg-gray-900 px-6 py-4 z-50">
+        <div className="fixed bottom-0 left-0 right-0 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-6 py-4 z-50">
           <div className="max-w-4xl mx-auto flex items-center justify-between gap-4">
             <div>
-              <p className="font-semibold">
+              <p className="font-semibold text-gray-900 dark:text-white">
                 {cart.size} module{cart.size !== 1 ? "s" : ""} selected
-                <span className="font-normal opacity-60 ml-2">· ${cartTotal}/mo total</span>
+                <span className="font-normal text-gray-500 dark:text-gray-400 ml-2">· ${cartTotal}/mo total</span>
               </p>
-              <p className="text-xs opacity-40 mt-0.5">
+              <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
                 {Array.from(cart).map((id) => MODULES.find((m) => m.id === id)?.name).filter(Boolean).join(", ")}
               </p>
             </div>
             <div className="flex gap-2 shrink-0">
-              <button onClick={clearCart} className="border rounded px-3 py-2 text-sm hover:opacity-70">Clear</button>
+              <button
+                onClick={clearCart}
+                className="px-5 py-2.5 border border-gray-200 dark:border-gray-700 rounded-xl text-sm font-semibold text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+              >
+                Clear
+              </button>
               <button
                 onClick={() => checkout(Array.from(cart))}
                 disabled={working}
-                className="bg-black text-white dark:bg-white dark:text-black rounded px-5 py-2 text-sm font-semibold disabled:opacity-40 hover:opacity-80"
+                className="px-5 py-2.5 brand-gradient text-white rounded-xl text-sm font-semibold hover:opacity-90 transition-opacity disabled:opacity-40"
               >
                 {working ? "Redirecting…" : `Subscribe · $${cartTotal}/mo`}
               </button>
@@ -231,7 +265,16 @@ function PlanPageInner() {
 
 export default function PlanPage() {
   return (
-    <Suspense fallback={<main className="p-6 max-w-4xl mx-auto"><p className="opacity-50">Loading…</p></main>}>
+    <Suspense fallback={
+      <main className="p-6 max-w-4xl mx-auto">
+        <div className="animate-pulse bg-gray-200 dark:bg-gray-800 rounded-2xl h-8 w-32 mb-6" />
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {[...Array(6)].map((_, i) => (
+            <div key={i} className="animate-pulse bg-gray-200 dark:bg-gray-800 rounded-2xl h-52" />
+          ))}
+        </div>
+      </main>
+    }>
       <PlanPageInner />
     </Suspense>
   );

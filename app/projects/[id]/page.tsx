@@ -69,8 +69,24 @@ export default function ProjectDetailPage() {
   const fmtDate = (iso: string) =>
     new Date(iso).toLocaleDateString(undefined, { year: "numeric", month: "long", day: "numeric" });
 
-  if (loading) return <main className="p-6 max-w-4xl mx-auto"><p className="opacity-50">Loading…</p></main>;
-  if (error) return <main className="p-6 max-w-4xl mx-auto"><p className="text-red-600">{error}</p></main>;
+  if (loading) return (
+    <main className="p-6 max-w-4xl mx-auto">
+      <div className="animate-pulse space-y-4">
+        <div className="bg-gray-200 dark:bg-gray-800 rounded-2xl h-8 w-48" />
+        <div className="grid grid-cols-4 gap-3">
+          {[...Array(4)].map((_, i) => <div key={i} className="bg-gray-200 dark:bg-gray-800 rounded-2xl h-20" />)}
+        </div>
+        <div className="bg-gray-200 dark:bg-gray-800 rounded-2xl h-40" />
+      </div>
+    </main>
+  );
+
+  if (error) return (
+    <main className="p-6 max-w-4xl mx-auto">
+      <p className="text-red-600">{error}</p>
+    </main>
+  );
+
   if (!project) return null;
 
   const statusActions = (
@@ -87,14 +103,24 @@ export default function ProjectDetailPage() {
     <main className="p-6 max-w-4xl mx-auto">
       <div className="flex items-start justify-between gap-4 mb-6">
         <div>
-          <button onClick={() => router.push("/projects")} className="text-sm opacity-50 hover:opacity-80 mb-2 block">← Projects</button>
-          <h1 className="text-2xl font-semibold">{project.name}</h1>
-          {project.customers && <p className="text-sm opacity-60 mt-1">{project.customers.name}</p>}
-          {project.description && <p className="text-sm opacity-50 mt-1">{project.description}</p>}
+          <button
+            onClick={() => router.push("/projects")}
+            className="w-8 h-8 flex items-center justify-center rounded-xl border border-gray-200 dark:border-gray-700 text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors mb-3"
+          >
+            ←
+          </button>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{project.name}</h1>
+          {project.customers && <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{project.customers.name}</p>}
+          {project.description && <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{project.description}</p>}
         </div>
         <div className="flex gap-2 flex-wrap justify-end">
           {statusActions.map((action) => (
-            <button key={action.status} onClick={() => setStatus(action.status)} disabled={updating} className="border rounded px-3 py-1.5 text-sm font-medium hover:opacity-70 disabled:opacity-40">
+            <button
+              key={action.status}
+              onClick={() => setStatus(action.status)}
+              disabled={updating}
+              className="px-5 py-2.5 border border-gray-200 dark:border-gray-700 rounded-xl text-sm font-semibold text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors disabled:opacity-40"
+            >
               {action.label}
             </button>
           ))}
@@ -109,27 +135,27 @@ export default function ProjectDetailPage() {
           { label: "Net", value: fmtMoney(net), style: net >= 0 ? "text-green-600 dark:text-green-400" : "text-red-500" },
           { label: "Budget", value: project.budget != null ? fmtMoney(project.budget) : "—", style: "" },
         ].map((s) => (
-          <div key={s.label} className="border rounded-xl p-4">
-            <p className="text-xs opacity-50 mb-1">{s.label}</p>
-            <p className={`font-semibold text-lg ${s.style}`}>{s.value}</p>
+          <div key={s.label} className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-2xl p-4">
+            <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">{s.label}</p>
+            <p className={`font-semibold text-lg ${s.style || "text-gray-900 dark:text-white"}`}>{s.value}</p>
           </div>
         ))}
       </div>
 
       {/* Budget progress */}
       {budgetUsed !== null && (
-        <div className="border rounded-xl p-4 mb-6">
+        <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-2xl p-5 mb-6">
           <div className="flex justify-between text-sm mb-2">
-            <span className="opacity-60">Budget used</span>
-            <span className="font-medium">{Math.round(budgetUsed)}%</span>
+            <span className="text-gray-500 dark:text-gray-400">Budget used</span>
+            <span className="font-semibold text-gray-900 dark:text-white">{Math.round(budgetUsed)}%</span>
           </div>
-          <div className="h-2 rounded-full bg-black/10 dark:bg-white/10 overflow-hidden">
+          <div className="h-2 rounded-full bg-gray-100 dark:bg-gray-800 overflow-hidden">
             <div
               className={`h-full rounded-full ${budgetUsed > 90 ? "bg-red-500" : budgetUsed > 70 ? "bg-yellow-500" : "bg-green-500"}`}
               style={{ width: `${Math.min(budgetUsed, 100)}%` }}
             />
           </div>
-          <div className="flex justify-between text-xs opacity-50 mt-1">
+          <div className="flex justify-between text-xs text-gray-400 dark:text-gray-500 mt-1">
             <span>{fmtMoney(expenses)} spent</span>
             <span>{fmtMoney(project.budget! - expenses)} remaining</span>
           </div>
@@ -138,26 +164,41 @@ export default function ProjectDetailPage() {
 
       {/* Dates */}
       {(project.start_date || project.end_date) && (
-        <div className="border rounded-xl p-4 mb-6 flex gap-8 text-sm">
-          {project.start_date && <div><p className="opacity-50 mb-1">Start</p><p>{fmtDate(project.start_date)}</p></div>}
-          {project.end_date && <div><p className="opacity-50 mb-1">End</p><p>{fmtDate(project.end_date)}</p></div>}
+        <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-2xl p-5 mb-6 flex gap-8 text-sm">
+          {project.start_date && (
+            <div>
+              <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Start</p>
+              <p className="text-gray-900 dark:text-white">{fmtDate(project.start_date)}</p>
+            </div>
+          )}
+          {project.end_date && (
+            <div>
+              <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">End</p>
+              <p className="text-gray-900 dark:text-white">{fmtDate(project.end_date)}</p>
+            </div>
+          )}
         </div>
       )}
 
       {/* Transactions */}
       <section>
-        <h2 className="font-semibold mb-3">Linked Transactions ({transactions.length})</h2>
+        <h2 className="font-semibold text-gray-900 dark:text-white mb-3">Linked Transactions ({transactions.length})</h2>
         {transactions.length === 0 ? (
-          <p className="text-sm opacity-50">No transactions linked to this project yet. Tag transactions with this project from the Transactions page.</p>
+          <div className="bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700 rounded-2xl p-4 text-sm text-gray-500 dark:text-gray-400">
+            No transactions linked to this project yet. Tag transactions with this project from the Transactions page.
+          </div>
         ) : (
           <div className="grid gap-2">
             {transactions.map((t) => (
-              <div key={t.id} className="border rounded-lg p-3 flex items-center justify-between gap-3 text-sm">
+              <div
+                key={t.id}
+                className="flex items-center gap-4 px-4 py-3.5 bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-2xl justify-between text-sm"
+              >
                 <div>
-                  <span className="font-medium">{t.vendor}</span>
-                  {t.description && <span className="opacity-50 ml-2">{t.description}</span>}
+                  <span className="font-medium text-gray-900 dark:text-white">{t.vendor}</span>
+                  {t.description && <span className="text-gray-500 dark:text-gray-400 ml-2">{t.description}</span>}
                 </div>
-                <span className={`tabular-nums font-medium ${t.type === "income" ? "text-green-600 dark:text-green-400" : "text-red-500"}`}>
+                <span className={`tabular-nums font-semibold ${t.type === "income" ? "text-green-600 dark:text-green-400" : "text-red-500"}`}>
                   {t.type === "income" ? "+" : "−"}{fmtMoney(t.amount)}
                 </span>
               </div>

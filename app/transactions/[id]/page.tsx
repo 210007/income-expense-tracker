@@ -121,7 +121,7 @@ export default function TransactionDetailPage() {
 
     if (updErr) return setError(updErr.message);
 
-    setStatus("Category saved ✅");
+    setStatus("Category saved");
     await load();
   };
 
@@ -136,7 +136,7 @@ export default function TransactionDetailPage() {
       .eq("id", txnId);
     setSavingProject(false);
     if (updErr) return setError(updErr.message);
-    setStatus("Project saved ✅");
+    setStatus("Project saved");
     await load();
   };
 
@@ -181,7 +181,7 @@ export default function TransactionDetailPage() {
     if (dbErr) return setError(dbErr.message);
 
     setFile(null);
-    setStatus("Uploaded ✅");
+    setStatus("Uploaded");
     await load();
   };
 
@@ -199,78 +199,59 @@ export default function TransactionDetailPage() {
 
   return (
     <main className="p-6 max-w-3xl mx-auto">
-      {/* Phone-friendly action bar */}
-      <div className="flex flex-col gap-3">
+      {/* Header */}
+      <div className="flex items-center gap-3 mb-6">
+        <a
+          href="/transactions"
+          className="w-8 h-8 flex items-center justify-center rounded-xl border border-gray-200 dark:border-gray-700 text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+        >
+          ←
+        </a>
         <div>
-          <h1 className="text-2xl font-semibold">Transaction</h1>
-          <p className="opacity-80 mt-1">Details, category, and receipts</p>
-        </div>
-
-        <div className="grid grid-cols-3 gap-2">
-          <a
-            href="/transactions"
-            className="text-center bg-black text-white py-3 rounded font-medium"
-          >
-            Back
-          </a>
-
-          <a
-            href="/"
-            className="text-center border py-3 rounded font-medium"
-          >
-            Dashboard
-          </a>
-
-          <button
-            className="text-center border py-3 rounded font-medium"
-            onClick={async () => {
-              await supabase.auth.signOut();
-              window.location.href = "/login";
-            }}
-          >
-            Logout
-          </button>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Transaction</h1>
+          <p className="text-sm text-gray-500 dark:text-gray-400">Details, category, and receipts</p>
         </div>
       </div>
 
-      {error && <p className="text-red-600 mt-4">{error}</p>}
-      {status && <p className="mt-3 opacity-80">{status}</p>}
+      {error && <p className="text-red-600 mb-4 text-sm">{error}</p>}
+      {status && <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">{status}</p>}
 
       {!txn ? (
-        <p className="mt-4">Loading…</p>
+        <div className="animate-pulse space-y-3">
+          <div className="bg-gray-200 dark:bg-gray-800 rounded-2xl h-24" />
+          <div className="bg-gray-200 dark:bg-gray-800 rounded-2xl h-16" />
+        </div>
       ) : (
-        <div className="border rounded p-4 mt-4">
-          <div className="flex justify-between gap-3">
-            <div className="font-medium">
-              {txn.vendor || "(No vendor)"} —{" "}
-              {txn.description || "(No description)"}
+        <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-2xl p-5 mb-5">
+          <div className="flex justify-between gap-3 mb-3">
+            <div className="font-semibold text-gray-900 dark:text-white">
+              {txn.vendor || "(No vendor)"} — {txn.description || "(No description)"}
             </div>
-            <div className="whitespace-nowrap">{prettyAmount}</div>
+            <div className={`whitespace-nowrap font-semibold tabular-nums ${txn.type === "income" ? "text-green-600 dark:text-green-400" : "text-red-500"}`}>
+              {prettyAmount}
+            </div>
           </div>
 
-          <div className="flex justify-between text-sm opacity-80 mt-2">
+          <div className="flex justify-between text-sm text-gray-500 dark:text-gray-400 mb-5">
             <div>{txn.txn_date}</div>
             <div>{txn.category || "Uncategorized"}</div>
           </div>
 
           {/* Category editor */}
-          <div className="mt-4 grid gap-2">
-            <label className="text-sm font-medium">Category</label>
+          <div className="space-y-2 mb-4">
+            <label className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider block">Category</label>
             <div className="flex gap-2">
               <select
-                className="border p-2 rounded w-full"
+                className="w-full border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2.5 bg-white dark:bg-gray-900 text-sm focus:outline-none"
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
               >
                 {CATEGORY_OPTIONS.map((c) => (
-                  <option key={c} value={c}>
-                    {c}
-                  </option>
+                  <option key={c} value={c}>{c}</option>
                 ))}
               </select>
-
               <button
-                className="bg-black text-white px-4 py-2 rounded font-medium whitespace-nowrap"
+                className="px-5 py-2.5 brand-gradient text-white rounded-xl text-sm font-semibold hover:opacity-90 transition-opacity whitespace-nowrap disabled:opacity-40"
                 onClick={saveCategory}
                 disabled={savingCategory}
               >
@@ -281,11 +262,11 @@ export default function TransactionDetailPage() {
 
           {/* Project tagger */}
           {projects.length > 0 && (
-            <div className="mt-4 grid gap-2">
-              <label className="text-sm font-medium">Project</label>
+            <div className="space-y-2">
+              <label className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider block">Project</label>
               <div className="flex gap-2">
                 <select
-                  className="border p-2 rounded w-full"
+                  className="w-full border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2.5 bg-white dark:bg-gray-900 text-sm focus:outline-none"
                   value={projectId}
                   onChange={(e) => setProjectId(e.target.value)}
                 >
@@ -295,7 +276,7 @@ export default function TransactionDetailPage() {
                   ))}
                 </select>
                 <button
-                  className="bg-black text-white px-4 py-2 rounded font-medium whitespace-nowrap"
+                  className="px-5 py-2.5 brand-gradient text-white rounded-xl text-sm font-semibold hover:opacity-90 transition-opacity whitespace-nowrap disabled:opacity-40"
                   onClick={saveProject}
                   disabled={savingProject}
                 >
@@ -308,51 +289,54 @@ export default function TransactionDetailPage() {
       )}
 
       {/* Receipt upload */}
-      <section className="border rounded p-4 mt-6">
-        <h2 className="font-semibold mb-3">Add receipt</h2>
+      <section className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-2xl p-5 mb-5">
+        <h2 className="font-semibold text-gray-900 dark:text-white mb-4">Add Receipt</h2>
 
         <input
           type="file"
           accept="image/*,application/pdf"
           onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+          className="text-sm text-gray-600 dark:text-gray-400 mb-3 block"
         />
 
         <button
-          className="bg-black text-white px-4 py-3 rounded font-medium mt-3"
+          className="px-5 py-2.5 brand-gradient text-white rounded-xl text-sm font-semibold hover:opacity-90 transition-opacity"
           onClick={uploadReceipt}
         >
           Upload
         </button>
 
-        <p className="text-sm opacity-80 mt-2">
-          Tip: On phone, this will let her take a photo or select a PDF.
+        <p className="text-sm text-gray-500 dark:text-gray-400 mt-3">
+          Tip: On phone, this will let you take a photo or select a PDF.
         </p>
       </section>
 
       {/* Receipt list */}
-      <section className="mt-6">
-        <h2 className="font-semibold mb-3">Receipts</h2>
+      <section>
+        <h2 className="font-semibold text-gray-900 dark:text-white mb-3">Receipts</h2>
 
         {receipts.length === 0 ? (
-          <p className="opacity-80">No receipts uploaded yet.</p>
+          <div className="bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700 rounded-2xl p-4 text-sm text-gray-500 dark:text-gray-400">
+            No receipts uploaded yet.
+          </div>
         ) : (
           <div className="grid gap-2">
             {receipts.map((r) => (
               <div
                 key={r.id}
-                className="border rounded p-4 flex justify-between gap-3"
+                className="flex items-center gap-4 px-4 py-3.5 bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-2xl justify-between"
               >
                 <div>
-                  <div className="font-medium">
+                  <div className="font-medium text-gray-900 dark:text-white text-sm">
                     {r.file_name || r.storage_path}
                   </div>
-                  <div className="text-sm opacity-80 mt-1">
+                  <div className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
                     {new Date(r.uploaded_at).toLocaleString()}
                   </div>
                 </div>
 
                 <button
-                  className="border rounded px-4 py-2 font-medium whitespace-nowrap"
+                  className="px-5 py-2.5 border border-gray-200 dark:border-gray-700 rounded-xl text-sm font-semibold text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors whitespace-nowrap"
                   onClick={() => openReceipt(r.storage_path)}
                 >
                   Open

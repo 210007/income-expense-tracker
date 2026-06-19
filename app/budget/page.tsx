@@ -126,14 +126,26 @@ export default function BudgetPage() {
 
   const MONTH_NAMES = ["January","February","March","April","May","June","July","August","September","October","November","December"];
 
-  if (loading) return <main className="p-6 max-w-4xl mx-auto"><p className="opacity-50">Loading…</p></main>;
+  if (loading) {
+    return (
+      <main className="p-6 max-w-4xl mx-auto space-y-4">
+        <div className="animate-pulse bg-gray-200 dark:bg-gray-800 rounded-2xl h-10 w-48" />
+        <div className="grid grid-cols-3 gap-3">
+          {[...Array(3)].map((_, i) => (
+            <div key={i} className="animate-pulse bg-gray-200 dark:bg-gray-800 rounded-2xl h-24" />
+          ))}
+        </div>
+        <div className="animate-pulse bg-gray-200 dark:bg-gray-800 rounded-2xl h-64" />
+      </main>
+    );
+  }
 
   if (gated) {
     return (
       <main className="p-6 max-w-4xl mx-auto">
-        <h1 className="text-2xl font-semibold mb-2">Budgeting</h1>
-        <p className="opacity-60 mb-6 text-sm">This module isn&apos;t active on your plan.</p>
-        <Link href="/plan" className="inline-block bg-black text-white dark:bg-white dark:text-black px-4 py-2 rounded font-medium text-sm hover:opacity-80">
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Budgeting</h1>
+        <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">This module isn&apos;t active on your plan.</p>
+        <Link href="/plan" className="px-5 py-2.5 brand-gradient text-white rounded-xl text-sm font-semibold hover:opacity-90 transition-opacity">
           Add Budgeting — $6 / mo
         </Link>
       </main>
@@ -152,36 +164,49 @@ export default function BudgetPage() {
 
   return (
     <main className="p-6 max-w-4xl mx-auto">
+      {/* Page header */}
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-semibold">Budget</h1>
-          <p className="text-sm opacity-50 mt-0.5">{MONTH_NAMES[month - 1]} {year}</p>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Budget</h1>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">{MONTH_NAMES[month - 1]} {year}</p>
         </div>
-        <div className="flex items-center gap-1 border rounded overflow-hidden text-sm">
-          <button onClick={() => navigate(-1)} className="px-2 py-1.5 hover:opacity-70">←</button>
-          <span className="px-2 font-medium tabular-nums">{MONTH_NAMES[month - 1].slice(0, 3)} {year}</span>
+        {/* Month navigator */}
+        <div className="flex items-center gap-1 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden text-sm">
+          <button
+            onClick={() => navigate(-1)}
+            className="px-3 py-2 text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+          >
+            ←
+          </button>
+          <span className="px-2 font-semibold text-gray-700 dark:text-gray-200 tabular-nums">
+            {MONTH_NAMES[month - 1].slice(0, 3)} {year}
+          </span>
           <button
             onClick={() => navigate(1)}
             disabled={month === now.getMonth() + 1 && year === now.getFullYear()}
-            className="px-2 py-1.5 hover:opacity-70 disabled:opacity-30"
-          >→</button>
+            className="px-3 py-2 text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors disabled:opacity-30"
+          >
+            →
+          </button>
         </div>
       </div>
 
-      {/* Summary */}
+      {/* Summary cards */}
       {budgets.length > 0 && (
         <div className="grid grid-cols-3 gap-3 mb-6">
-          <div className="border rounded-xl p-4">
-            <p className="text-xs opacity-50 mb-1">Total Budgeted</p>
-            <p className="font-semibold text-xl tabular-nums">{fmtMoney(totalBudgeted)}</p>
+          <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-2xl p-5">
+            <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1.5">Total Budgeted</p>
+            <p className="font-bold text-xl tabular-nums text-gray-900 dark:text-white">{fmtMoney(totalBudgeted)}</p>
           </div>
-          <div className="border rounded-xl p-4">
-            <p className="text-xs opacity-50 mb-1">Total Spent</p>
-            <p className={`font-semibold text-xl tabular-nums ${totalSpent > totalBudgeted ? "text-red-500" : ""}`}>{fmtMoney(totalSpent)}</p>
+          <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-2xl p-5">
+            <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1.5">Total Spent</p>
+            <p className={`font-bold text-xl tabular-nums ${totalSpent > totalBudgeted ? "text-red-500" : "text-gray-900 dark:text-white"}`}>
+              {fmtMoney(totalSpent)}
+            </p>
           </div>
-          <div className="border rounded-xl p-4">
-            <p className="text-xs opacity-50 mb-1">Remaining</p>
-            <p className={`font-semibold text-xl tabular-nums ${totalBudgeted - totalSpent < 0 ? "text-red-500" : "text-green-600 dark:text-green-400"}`}>
+          <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-2xl p-5">
+            <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1.5">Remaining</p>
+            <p className={`font-bold text-xl tabular-nums ${totalBudgeted - totalSpent < 0 ? "text-red-500" : "text-green-600 dark:text-green-400"}`}>
               {fmtMoney(totalBudgeted - totalSpent)}
             </p>
           </div>
@@ -190,7 +215,7 @@ export default function BudgetPage() {
 
       {/* Budget rows */}
       {budgets.length > 0 && (
-        <section className="border rounded-xl overflow-hidden mb-6">
+        <section className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-2xl overflow-hidden mb-6">
           {budgets.map((b, i) => {
             const spent = spendMap[b.category] ?? 0;
             const pct = b.amount > 0 ? Math.min((spent / Number(b.amount)) * 100, 100) : 0;
@@ -198,17 +223,18 @@ export default function BudgetPage() {
             const warn = !over && pct >= 80;
 
             return (
-              <div key={b.id} className={`p-4 ${i > 0 ? "border-t" : ""}`}>
-                <div className="flex items-center justify-between gap-4 mb-2">
-                  <span className="font-medium text-sm">{b.category}</span>
+              <div key={b.id} className={`p-5 ${i > 0 ? "border-t border-gray-100 dark:border-gray-800" : ""}`}>
+                <div className="flex items-center justify-between gap-4 mb-2.5">
+                  <span className="font-semibold text-sm text-gray-900 dark:text-white">{b.category}</span>
                   <div className="flex items-center gap-3 shrink-0">
-                    <span className={`text-sm tabular-nums ${over ? "text-red-500" : "opacity-60"}`}>
-                      {fmtMoney(spent)} / {" "}
+                    <span className={`text-sm tabular-nums ${over ? "text-red-500" : "text-gray-500 dark:text-gray-400"}`}>
+                      {fmtMoney(spent)}
+                      {" / "}
                       {editingId === b.id ? (
                         <input
                           type="number"
                           autoFocus
-                          className="border rounded px-2 py-0.5 w-24 bg-transparent text-sm"
+                          className="border border-gray-200 dark:border-gray-700 rounded-lg px-2 py-0.5 w-24 bg-transparent text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20"
                           value={editAmount}
                           onChange={(e) => setEditAmount(e.target.value)}
                           onBlur={() => saveEdit(b.id)}
@@ -217,22 +243,27 @@ export default function BudgetPage() {
                       ) : (
                         <button
                           onClick={() => { setEditingId(b.id); setEditAmount(String(b.amount)); }}
-                          className="underline underline-offset-2 hover:opacity-70"
+                          className="underline underline-offset-2 hover:opacity-70 transition-opacity"
                         >
                           {fmtMoney(Number(b.amount))}
                         </button>
                       )}
                     </span>
-                    <button onClick={() => removeBudget(b.id)} className="opacity-30 hover:opacity-70 hover:text-red-500 text-sm">×</button>
+                    <button
+                      onClick={() => removeBudget(b.id)}
+                      className="w-6 h-6 flex items-center justify-center rounded-lg text-gray-300 dark:text-gray-600 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 transition-colors text-base leading-none"
+                    >
+                      ×
+                    </button>
                   </div>
                 </div>
-                <div className="h-1.5 bg-gray-100 dark:bg-neutral-800 rounded-full overflow-hidden">
+                <div className="h-2 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
                   <div
                     className={`h-full rounded-full transition-all ${over ? "bg-red-500" : warn ? "bg-yellow-500" : "bg-green-500"}`}
                     style={{ width: `${Math.min(spent / Number(b.amount) * 100, 100)}%` }}
                   />
                 </div>
-                <div className="flex justify-between text-xs opacity-40 mt-1">
+                <div className="flex justify-between text-xs text-gray-400 dark:text-gray-500 mt-1.5">
                   <span>{over ? `${fmtMoney(spent - Number(b.amount))} over budget` : `${fmtMoney(Number(b.amount) - spent)} left`}</span>
                   <span>{Math.round(pct)}%</span>
                 </div>
@@ -244,17 +275,19 @@ export default function BudgetPage() {
 
       {/* Unbudgeted spending */}
       {unbudgeted.length > 0 && (
-        <section className="border rounded-xl p-5 mb-6">
-          <h2 className="font-semibold mb-3 text-sm">Unbudgeted Spending</h2>
-          <div className="grid gap-2">
+        <section className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-2xl p-5 mb-6">
+          <h2 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-4">
+            Unbudgeted Spending
+          </h2>
+          <div className="grid gap-1">
             {unbudgeted.map((s) => (
-              <div key={s.category} className="flex items-center justify-between text-sm py-1">
-                <span className="opacity-60">{s.category}</span>
+              <div key={s.category} className="flex items-center justify-between py-2 text-sm">
+                <span className="text-gray-600 dark:text-gray-300">{s.category}</span>
                 <div className="flex items-center gap-3">
-                  <span className="tabular-nums font-medium">{fmtMoney(s.total)}</span>
+                  <span className="tabular-nums font-semibold text-gray-900 dark:text-white">{fmtMoney(s.total)}</span>
                   <button
                     onClick={() => { setNewCategory(s.category); setNewAmount(""); }}
-                    className="text-xs underline opacity-40 hover:opacity-70"
+                    className="text-xs text-gray-400 dark:text-gray-500 underline underline-offset-2 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
                   >
                     Set budget
                   </button>
@@ -266,14 +299,14 @@ export default function BudgetPage() {
       )}
 
       {/* Add budget form */}
-      <section className="border rounded-xl p-5">
-        <h2 className="font-semibold mb-4">
+      <section className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-2xl p-5">
+        <h2 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-4">
           {budgets.length === 0 ? "Set Your First Budget" : "Add Category Budget"}
         </h2>
         <div className="grid gap-3">
           <div className="grid grid-cols-[1fr_auto] gap-3">
             <input
-              className="border rounded px-3 py-2 bg-transparent text-sm"
+              className="w-full border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2.5 bg-transparent text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20"
               placeholder="Category (e.g. Office supplies)"
               value={newCategory}
               onChange={(e) => setNewCategory(e.target.value)}
@@ -282,7 +315,7 @@ export default function BudgetPage() {
               type="number"
               min="1"
               step="1"
-              className="border rounded px-3 py-2 bg-transparent text-sm w-28"
+              className="border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2.5 bg-transparent text-sm w-32 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
               placeholder="$0.00"
               value={newAmount}
               onChange={(e) => setNewAmount(e.target.value)}
@@ -292,7 +325,7 @@ export default function BudgetPage() {
           <button
             onClick={addBudget}
             disabled={adding}
-            className="bg-black text-white dark:bg-white dark:text-black py-2.5 rounded font-medium disabled:opacity-40 hover:opacity-80 text-sm"
+            className="px-5 py-2.5 brand-gradient text-white rounded-xl text-sm font-semibold hover:opacity-90 transition-opacity disabled:opacity-40"
           >
             {adding ? "Saving…" : "Add Budget"}
           </button>
@@ -300,7 +333,11 @@ export default function BudgetPage() {
       </section>
 
       {budgets.length === 0 && spending.length === 0 && (
-        <p className="opacity-40 text-sm mt-4">No spending recorded for {MONTH_NAMES[month - 1]} {year}.</p>
+        <div className="text-center py-20 border border-dashed border-gray-200 dark:border-gray-800 rounded-2xl mt-4">
+          <p className="text-sm text-gray-500 dark:text-gray-400">
+            No spending recorded for {MONTH_NAMES[month - 1]} {year}.
+          </p>
+        </div>
       )}
     </main>
   );
