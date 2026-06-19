@@ -32,106 +32,21 @@ const emptyForm = {
   unit_price: "", cost_price: "", sku: "", unit: "per visit", category: "", is_active: true,
 };
 
-export default function ProductsPage() {
-  const router = useRouter();
-  const [loading, setLoading] = useState(true);
-  const [products, setProducts] = useState<Product[]>([]);
-  const [filter, setFilter] = useState<"all" | "product" | "service">("all");
-  const [search, setSearch] = useState("");
-  const [adding, setAdding] = useState(false);
-  const [editing, setEditing] = useState<string | null>(null);
-  const [form, setForm] = useState(emptyForm);
-  const [saving, setSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+type FormValues = typeof emptyForm;
 
-  const load = async () => {
-    setLoading(true);
-    const { data: sessionData } = await supabase.auth.getSession();
-    if (!sessionData.session) { router.push("/login"); return; }
-    const { data } = await supabase
-      .from("products")
-      .select("id, name, type, description, unit_price, cost_price, sku, unit, category, is_active, stock_quantity")
-      .eq("user_id", sessionData.session.user.id)
-      .order("name");
-    setProducts((data as Product[]) ?? []);
-    setLoading(false);
-  };
-
-  useEffect(() => { load(); }, []);
-
-  const setField = (k: keyof typeof emptyForm, v: string | boolean) =>
-    setForm((prev) => ({ ...prev, [k]: v }));
-
-  const startEdit = (p: Product) => {
-    setForm({
-      name: p.name, type: p.type, description: p.description ?? "",
-      unit_price: String(p.unit_price), cost_price: p.cost_price ? String(p.cost_price) : "",
-      sku: p.sku ?? "", unit: p.unit ?? (p.type === "service" ? "per visit" : "each"),
-      category: p.category ?? "", is_active: p.is_active,
-    });
-    setEditing(p.id);
-    setAdding(false);
-  };
-
-  const startAdd = () => {
-    setForm(emptyForm);
-    setAdding(true);
-    setEditing(null);
-  };
-
-  const cancel = () => { setAdding(false); setEditing(null); setError(null); };
-
-  const save = async () => {
-    if (!form.name.trim()) { setError("Name is required."); return; }
-    if (!form.unit_price) { setError("Price is required."); return; }
-    setSaving(true);
-    setError(null);
-    const { data: sessionData } = await supabase.auth.getSession();
-    if (!sessionData.session) return;
-
-    const payload = {
-      user_id: sessionData.session.user.id,
-      name: form.name.trim(),
-      type: form.type,
-      description: form.description.trim() || null,
-      unit_price: parseFloat(form.unit_price),
-      cost_price: form.cost_price ? parseFloat(form.cost_price) : null,
-      sku: form.sku.trim() || null,
-      unit: form.unit || null,
-      category: form.category.trim() || null,
-      is_active: form.is_active,
-    };
-
-    if (editing) {
-      await supabase.from("products").update(payload).eq("id", editing);
-    } else {
-      await supabase.from("products").insert(payload);
-    }
-
-    setSaving(false);
-    cancel();
-    await load();
-  };
-
-  const toggleActive = async (p: Product) => {
-    await supabase.from("products").update({ is_active: !p.is_active }).eq("id", p.id);
-    setProducts((prev) => prev.map((x) => x.id === p.id ? { ...x, is_active: !x.is_active } : x));
-  };
-
-  const deleteProduct = async (id: string) => {
-    if (!window.confirm("Delete this item?")) return;
-    await supabase.from("products").delete().eq("id", id);
-    setProducts((prev) => prev.filter((p) => p.id !== id));
-  };
-
-  const filtered = products.filter((p) => {
-    if (filter !== "all" && p.type !== filter) return false;
-    if (search && !p.name.toLowerCase().includes(search.toLowerCase()) &&
-        !(p.category ?? "").toLowerCase().includes(search.toLowerCase())) return false;
-    return true;
-  });
-
-  const FormPanel = ({ title }: { title: string }) => (
+function FormPanel({
+  title, form, setField, save, cancel, saving, editing, error,
+}: {
+  title: string;
+  form: FormValues;
+  setField: (k: keyof FormValues, v: string | boolean) => void;
+  save: () => void;
+  cancel: () => void;
+  saving: boolean;
+  editing: string | null;
+  error: string | null;
+}) {
+  return (
     <div className="border border-gray-200 dark:border-gray-700 rounded-2xl p-6 mb-6 bg-gray-50 dark:bg-gray-900/50">
       <h3 className="font-semibold text-gray-900 dark:text-white mb-5">{title}</h3>
 
@@ -240,7 +155,7 @@ export default function ProductsPage() {
           <label className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider block mb-1.5">Category</label>
           <input
             className="w-full border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2.5 bg-white dark:bg-gray-900 text-sm focus:outline-none"
-            placeholder="e.g. Pest Control, Cleaning, Labor"
+            placeholder="e.g. Treatments, Cleaning, Labor"
             value={form.category}
             onChange={(e) => setField("category", e.target.value)}
           />
@@ -274,6 +189,106 @@ export default function ProductsPage() {
       </div>
     </div>
   );
+}
+
+export default function ProductsPage() {
+  const router = useRouter();
+  const [loading, setLoading] = useState(true);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [filter, setFilter] = useState<"all" | "product" | "service">("all");
+  const [search, setSearch] = useState("");
+  const [adding, setAdding] = useState(false);
+  const [editing, setEditing] = useState<string | null>(null);
+  const [form, setForm] = useState(emptyForm);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const load = async () => {
+    setLoading(true);
+    const { data: sessionData } = await supabase.auth.getSession();
+    if (!sessionData.session) { router.push("/login"); return; }
+    const { data } = await supabase
+      .from("products")
+      .select("id, name, type, description, unit_price, cost_price, sku, unit, category, is_active, stock_quantity")
+      .eq("user_id", sessionData.session.user.id)
+      .order("name");
+    setProducts((data as Product[]) ?? []);
+    setLoading(false);
+  };
+
+  useEffect(() => { load(); }, []);
+
+  const setField = (k: keyof typeof emptyForm, v: string | boolean) =>
+    setForm((prev) => ({ ...prev, [k]: v }));
+
+  const startEdit = (p: Product) => {
+    setForm({
+      name: p.name, type: p.type, description: p.description ?? "",
+      unit_price: String(p.unit_price), cost_price: p.cost_price ? String(p.cost_price) : "",
+      sku: p.sku ?? "", unit: p.unit ?? (p.type === "service" ? "per visit" : "each"),
+      category: p.category ?? "", is_active: p.is_active,
+    });
+    setEditing(p.id);
+    setAdding(false);
+  };
+
+  const startAdd = () => {
+    setForm(emptyForm);
+    setAdding(true);
+    setEditing(null);
+  };
+
+  const cancel = () => { setAdding(false); setEditing(null); setError(null); };
+
+  const save = async () => {
+    if (!form.name.trim()) { setError("Name is required."); return; }
+    if (!form.unit_price) { setError("Price is required."); return; }
+    setSaving(true);
+    setError(null);
+    const { data: sessionData } = await supabase.auth.getSession();
+    if (!sessionData.session) return;
+
+    const payload = {
+      user_id: sessionData.session.user.id,
+      name: form.name.trim(),
+      type: form.type,
+      description: form.description.trim() || null,
+      unit_price: parseFloat(form.unit_price),
+      cost_price: form.cost_price ? parseFloat(form.cost_price) : null,
+      sku: form.sku.trim() || null,
+      unit: form.unit || null,
+      category: form.category.trim() || null,
+      is_active: form.is_active,
+    };
+
+    if (editing) {
+      await supabase.from("products").update(payload).eq("id", editing);
+    } else {
+      await supabase.from("products").insert(payload);
+    }
+
+    setSaving(false);
+    cancel();
+    await load();
+  };
+
+  const toggleActive = async (p: Product) => {
+    await supabase.from("products").update({ is_active: !p.is_active }).eq("id", p.id);
+    setProducts((prev) => prev.map((x) => x.id === p.id ? { ...x, is_active: !x.is_active } : x));
+  };
+
+  const deleteProduct = async (id: string) => {
+    if (!window.confirm("Delete this item?")) return;
+    await supabase.from("products").delete().eq("id", id);
+    setProducts((prev) => prev.filter((p) => p.id !== id));
+  };
+
+  const filtered = products.filter((p) => {
+    if (filter !== "all" && p.type !== filter) return false;
+    if (search && !p.name.toLowerCase().includes(search.toLowerCase()) &&
+        !(p.category ?? "").toLowerCase().includes(search.toLowerCase())) return false;
+    return true;
+  });
 
   return (
     <main className="p-6 max-w-6xl mx-auto">
@@ -300,7 +315,7 @@ export default function ProductsPage() {
       </div>
 
       {/* Inline add form */}
-      {adding && <FormPanel title="New Item" />}
+      {adding && <FormPanel title="New Item" form={form} setField={setField} save={save} cancel={cancel} saving={saving} editing={editing} error={error} />}
 
       {/* Filters */}
       {!adding && (
@@ -358,7 +373,7 @@ export default function ProductsPage() {
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {filtered.map((p) => {
-            if (editing === p.id) return <div key={p.id} className="sm:col-span-2 lg:col-span-3"><FormPanel title="Edit Item" /></div>;
+            if (editing === p.id) return <div key={p.id} className="sm:col-span-2 lg:col-span-3"><FormPanel title="Edit Item" form={form} setField={setField} save={save} cancel={cancel} saving={saving} editing={editing} error={error} /></div>;
             return (
               <div
                 key={p.id}
