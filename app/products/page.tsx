@@ -262,9 +262,11 @@ export default function ProductsPage() {
     };
 
     if (editing) {
-      await supabase.from("products").update(payload).eq("id", editing);
+      const { error: err } = await supabase.from("products").update(payload).eq("id", editing);
+      if (err) { setError(err.message); setSaving(false); return; }
     } else {
-      await supabase.from("products").insert(payload);
+      const { error: err } = await supabase.from("products").insert(payload);
+      if (err) { setError(err.message); setSaving(false); return; }
     }
 
     setSaving(false);
