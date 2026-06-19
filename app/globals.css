@@ -3,6 +3,9 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  --brand-blue: #2563EB;
+  --brand-green: #22C55E;
+  --brand-mid: #0ea874;
 }
 
 @theme inline {
@@ -22,11 +25,26 @@
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-geist-sans, system-ui, sans-serif);
+  -webkit-font-smoothing: antialiased;
 }
 
-select,
-option {
+.brand-gradient {
+  background: linear-gradient(135deg, var(--brand-blue), var(--brand-green));
+}
+
+.brand-text {
+  background: linear-gradient(135deg, var(--brand-blue), var(--brand-green));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.brand-border {
+  border-image: linear-gradient(135deg, var(--brand-blue), var(--brand-green)) 1;
+}
+
+select, option {
   background-color: #000;
   color: #fff;
 }
