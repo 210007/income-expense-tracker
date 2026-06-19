@@ -14,7 +14,7 @@ type Product = {
   stock_quantity: number;
   low_stock_threshold: number;
   category: string | null;
-  active: boolean;
+  is_active: boolean;
 };
 
 type Adjustment = {

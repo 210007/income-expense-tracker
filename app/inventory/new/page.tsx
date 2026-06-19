@@ -49,6 +49,7 @@ export default function NewProductPage() {
       low_stock_threshold: parseFloat(lowThreshold) || 5,
       category: category.trim() || null,
       active: true,
+      is_active: true,
     }).select("id").single();
     setSaving(false);
     if (error || !product) { setError(error?.message ?? "Failed to create product."); return; }
