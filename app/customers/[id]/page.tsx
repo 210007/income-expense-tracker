@@ -2,7 +2,9 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
+import Link from "next/link";
 import { supabase } from "@/lib/supabaseClient";
+import { hasModule } from "@/lib/modules";
 import AddressAutocomplete from "@/components/AddressAutocomplete";
 
 type Customer = {
@@ -13,6 +15,24 @@ type Customer = {
 type CustomerField = { id: string; user_id: string; label: string; field_type: string; created_at: string };
 type CustomerFieldValue = { id: string; customer_id: string; field_id: string; value: string | null };
 type ServicePrice = { id: string; service_name: string; price: number };
+type Invoice = {
+  id: string;
+  invoice_number: string;
+  status: "draft" | "sent" | "paid" | "void";
+  issue_date: string;
+  due_date: string | null;
+  invoice_items: { quantity: number; unit_price: number }[];
+};
+
+const STATUS_BADGE: Record<string, string> = {
+  draft: "bg-gray-100 text-gray-500 dark:bg-gray-800",
+  sent: "bg-blue-50 text-blue-600 dark:bg-blue-950/40 dark:text-blue-400",
+  paid: "bg-green-50 text-green-700 dark:bg-green-950/40 dark:text-green-400",
+  void: "bg-red-50 text-red-500 dark:bg-red-950/30 dark:text-red-400",
+};
+
+const money = (n: number) =>
+  new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(n);
 
 const PREBUILT_FIELDS = [
   { label: "Service Frequency", field_type: "text", category: "Scheduling" },
@@ -72,6 +92,9 @@ export default function CustomerDetailPage() {
   const [newFieldType, setNewFieldType] = useState("text");
   const [savingNewField, setSavingNewField] = useState(false);
 
+  const [invoices, setInvoices] = useState<Invoice[]>([]);
+  const [hasInvoicing, setHasInvoicing] = useState(false);
+
   const [servicePrices, setServicePrices] = useState<ServicePrice[]>([]);
   const [addingPrice, setAddingPrice] = useState(false);
   const [newPriceName, setNewPriceName] = useState("");
@@ -107,14 +130,21 @@ export default function CustomerDetailPage() {
     setEditZip(cust.address_zip ?? "");
     setEditNotes(cust.notes ?? "");
 
-    const [{ data: fieldsData }, { data: pricesData }] = await Promise.all([
+    const invoicingActive = await hasModule("invoicing");
+    setHasInvoicing(invoicingActive);
+
+    const [{ data: fieldsData }, { data: pricesData }, { data: invData }] = await Promise.all([
       supabase.from("customer_fields").select("id, user_id, label, field_type, created_at").eq("user_id", uid).order("created_at", { ascending: true }),
       supabase.from("customer_service_prices").select("id, service_name, price").eq("customer_id", id).order("created_at", { ascending: true }),
+      invoicingActive
+        ? supabase.from("invoices").select("id, invoice_number, status, issue_date, due_date, invoice_items(quantity, unit_price)").eq("customer_id", id).order("created_at", { ascending: false })
+        : Promise.resolve({ data: [] }),
     ]);
 
     const loadedFields = (fieldsData as CustomerField[]) ?? [];
     setFields(loadedFields);
     setServicePrices((pricesData as ServicePrice[]) ?? []);
+    setInvoices((invData as unknown as Invoice[]) ?? []);
 
     if (loadedFields.length > 0) {
       const { data: valData } = await supabase
@@ -572,10 +602,57 @@ export default function CustomerDetailPage() {
         </div>
       </section>
 
-      <section className="border rounded-lg p-5">
-        <h2 className="font-semibold mb-2">Transactions</h2>
-        <p className="text-sm opacity-50">Invoice &amp; transaction linking coming soon.</p>
-      </section>
+      {hasInvoicing && (
+        <section className="border rounded-lg p-5">
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="font-semibold">Invoices</h2>
+            <Link
+              href={`/invoices/new`}
+              className="text-sm text-blue-500 hover:text-blue-600 font-medium"
+            >
+              + New Invoice
+            </Link>
+          </div>
+
+          {invoices.length === 0 ? (
+            <p className="text-sm opacity-40">No invoices yet for this customer.</p>
+          ) : (
+            <div className="space-y-1.5">
+              {invoices.map((inv) => {
+                const total = inv.invoice_items.reduce(
+                  (sum, item) => sum + item.quantity * item.unit_price,
+                  0
+                );
+                return (
+                  <Link
+                    key={inv.id}
+                    href={`/invoices/${inv.id}`}
+                    className="flex items-center gap-3 px-3 py-2.5 rounded-xl border border-gray-100 dark:border-gray-800 hover:border-gray-300 dark:hover:border-gray-600 hover:shadow-sm transition-all text-sm"
+                  >
+                    <span className="font-mono text-xs text-gray-500 dark:text-gray-400 w-20 shrink-0">
+                      {inv.invoice_number}
+                    </span>
+                    <span className={`text-xs font-semibold px-2 py-0.5 rounded-full capitalize ${STATUS_BADGE[inv.status]}`}>
+                      {inv.status}
+                    </span>
+                    <span className="text-gray-500 dark:text-gray-400 flex-1">
+                      {new Date(inv.issue_date).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })}
+                      {inv.due_date && (
+                        <span className="ml-2 text-xs opacity-60">
+                          due {new Date(inv.due_date).toLocaleDateString(undefined, { month: "short", day: "numeric" })}
+                        </span>
+                      )}
+                    </span>
+                    <span className="font-bold text-gray-900 dark:text-white tabular-nums shrink-0">
+                      {money(total)}
+                    </span>
+                  </Link>
+                );
+              })}
+            </div>
+          )}
+        </section>
+      )}
     </main>
   );
 }
